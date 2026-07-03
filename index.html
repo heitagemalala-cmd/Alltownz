@@ -1,0 +1,222 @@
+< DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AllTownz | Uganda's Online Mall</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f8f9fa; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
+        .skeleton { background: #e0e0e0; background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200px 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+    </style>
+</head>
+<body class="pb-24">
+    <div x-data="homeApp()" x-init="init()" class="max-w-lg mx-auto bg-white min-h-screen shadow-2xl relative">
+        
+        <div class="sticky top-0 z-20 bg-white px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">A</div>
+                <h1 class="text-xl font-extrabold text-gray-900 tracking-tight">All<span class="text-green-600">Townz</span></h1>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="location.href='checkout.html'" class="relative p-2 hover:bg-gray-100 rounded-full transition">
+                    <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <span x-text="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white"></span>
+                </button>
+                <button onclick="location.href='login.html'" class="bg-green-600 text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm hover:bg-green-700 transition">Login</button>
+            </div>
+        </div>
+
+        <div class="px-4 pt-4">
+            <div class="relative mb-4">
+                <svg class="w-5 h-5 text-gray-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" x-model="search" @input.debounce.300ms="searchProducts()" 
+                       placeholder="Search for products, brands..." 
+                       class="w-full pl-10 pr-4 py-3 bg-gray-100 rounded-2xl border-none focus:ring-2 focus:ring-green-500 outline-none text-sm placeholder-gray-500">
+            </div>
+
+            <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2 mb-4">
+                <template x-for="cat in categories">
+                    <button @click="filterByCategory(cat)" 
+                            :class="selectedCategory === cat ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-600'"
+                            class="px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200">
+                        <span x-text="cat"></span>
+                    </button>
+                </template>
+            </div>
+
+            <div class="bg-gray-900 rounded-2xl p-4 mb-6 shadow-lg relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-500 opacity-5 rounded-full -mr-16 -mt-16"></div>
+                <div class="flex justify-between items-center mb-3 relative z-10">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">🔥</span>
+                        <h2 class="text-white font-bold text-lg">Flash Sale</h2>
+                    </div>
+                    <div class="bg-black/50 px-3 py-1 rounded-full border border-yellow-500/30">
+                        <span x-text="timer" class="text-yellow-400 font-mono text-sm font-bold"></span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 relative z-10">
+                    <template x-if="flashSales.length > 0">
+                        <template x-for="item in flashSales">
+                            <div @click="addToCart(item)" class="bg-white rounded-xl p-3 cursor-pointer hover:shadow-xl transition transform hover:-translate-y-1">
+                                <div class="relative w-full h-28 mb-2">
+                                    <img :src="item.image" class="w-full h-full object-contain rounded-lg" alt="product">
+                                    <span class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">-40%</span>
+                                </div>
+                                <p class="text-xs text-gray-500 font-medium truncate" x-text="item.name"></p>
+                                <p class="text-green-600 font-extrabold text-sm mt-1" x-text="'UGX '+item.price.toLocaleString()"></p>
+                            </div>
+                        </template>
+                    </template>
+                    <template x-if="flashSales.length === 0">
+                        <div class="col-span-2 text-center py-4 text-gray-400 text-sm">Loading deals...</div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-end mb-3">
+                <h3 class="font-bold text-lg text-gray-900">Recommended For You</h3>
+                <button class="text-green-600 text-sm font-semibold hover:underline">See All</button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <template x-if="loading">
+                    <template x-for="i in 4">
+                        <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+                            <div class="skeleton w-full h-32 mb-2"></div>
+                            <div class="skeleton w-3/4 h-4 mb-1"></div>
+                            <div class="skeleton w-1/2 h-4"></div>
+                        </div>
+                    </template>
+                </template>
+
+                <template x-if="!loading">
+                    <template x-for="prod in products">
+                        <div @click="addToCart(prod)" class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 hover:shadow-md transition cursor-pointer group">
+                            <div class="w-full h-32 bg-gray-50 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+                                <img :src="prod.image || 'https://placehold.co/200x200/e2e8f0/1e293b?text=Product'" 
+                                     class="w-full h-full object-contain group-hover:scale-105 transition duration-300" alt="product">
+                            </div>
+                            <p class="text-sm font-medium text-gray-800 line-clamp-1" x-text="prod.name"></p>
+                            <div class="flex justify-between items-center mt-1">
+                                <p class="text-green-600 font-bold text-sm" x-text="'UGX '+prod.price.toLocaleString()"></p>
+                                <div class="flex items-center gap-1">
+                                    <span class="text-yellow-500 text-xs">★</span>
+                                    <span class="text-[10px] text-gray-400">4.5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+            </div>
+        </div>
+
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 px-6 flex justify-between items-center z-50 max-w-lg mx-auto shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+            <button onclick="location.href='/'" class="flex flex-col items-center gap-0.5 text-green-600">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                <span class="text-[10px] font-bold">Home</span>
+            </button>
+            <button onclick="location.href='seller-dashboard.html'" class="flex flex-col items-center gap-0.5 text-gray-500 hover:text-gray-800">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                <span class="text-[10px] font-medium">Sell</span>
+            </button>
+            <button onclick="location.href='tracking.html'" class="flex flex-col items-center gap-0.5 text-gray-500 hover:text-gray-800">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-[10px] font-medium">Track</span>
+            </button>
+            <button onclick="location.href='admin.html'" class="flex flex-col items-center gap-0.5 text-gray-500 hover:text-gray-800">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span class="text-[10px] font-medium">Admin</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+    function homeApp() {
+        return {
+            search: '',
+            cartCount: 0,
+            loading: true,
+            timer: '02:30:00',
+            selectedCategory: 'Electronics',
+            categories: ['Electronics', 'Fashion', 'Groceries', 'Phones', 'Home'],
+            products: [],
+            flashSales: [],
+            
+            async init() {
+                const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                this.cartCount = cart.length;
+                await this.loadProducts();
+                this.flashSales = this.products.slice(0, 2);
+                this.loading = false;
+                
+                setInterval(() => {
+                    let [h, m, s] = this.timer.split(':').map(Number);
+                    s--; if(s < 0) { s = 59; m--; } if(m < 0) { m = 59; h--; } if(h < 0) { h = 2; m = 30; s = 0; }
+                    this.timer = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+                }, 1000);
+            },
+            
+            async loadProducts() {
+                try {
+                    const response = await fetch('/api/products');
+                    const data = await response.json();
+                    this.products = data.length > 0 ? data : this.getFallbackProducts();
+                } catch {
+                    this.products = this.getFallbackProducts();
+                }
+            },
+            
+            getFallbackProducts() {
+                return [
+                    {id: 1, name: 'Samsung Galaxy A54', price: 850000, image: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=200&h=200&fit=crop'},
+                    {id: 2, name: 'Nike Air Max', price: 350000, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop'},
+                    {id: 3, name: 'Wireless Earbuds', price: 120000, image: 'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=200&h=200&fit=crop'},
+                    {id: 4, name: 'Smart Watch Pro', price: 250000, image: 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=200&h=200&fit=crop'}
+                ];
+            },
+            
+            async searchProducts() {
+                if(this.search.length > 2) {
+                    this.loading = true;
+                    try {
+                        const response = await fetch(`/api/products/search?q=${this.search}`);
+                        const data = await response.json();
+                        this.products = data.length > 0 ? data : this.getFallbackProducts();
+                    } catch {}
+                    this.loading = false;
+                } else if(this.search.length === 0) {
+                    this.loadProducts();
+                }
+            },
+            
+            async filterByCategory(category) {
+                this.selectedCategory = category;
+                this.loading = true;
+                try {
+                    const response = await fetch(`/api/products/search?q=${category}`);
+                    const data = await response.json();
+                    this.products = data.length > 0 ? data : this.getFallbackProducts();
+                } catch {}
+                this.loading = false;
+            },
+            
+            addToCart(item) {
+                let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                cart.push(item);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                this.cartCount = cart.length;
+                alert(`🛒 ${item.name} added to cart!`);
+            }
+        }
+    }
+    </script>
+</body>
+</html>
