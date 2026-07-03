@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order - AllTownz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-md mx-auto p-4">
+        <h1 class="text-2xl font-bold text-green-600 mb-4">📍 Track Order</h1>
+        <div id="map" style="height: 300px;" class="rounded-xl shadow mb-4"></div>
+        <div class="bg-white p-4 rounded-xl shadow">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-semibold">Order #ALL-2026-001</span>
+                <span id="orderStatus" class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">In Transit</span>
+            </div>
+            <p class="text-sm text-gray-600">Estimated Delivery: <span class="font-bold">30 min</span></p>
+            <p class="text-sm text-gray-600">Rider: <span class="font-bold">Daniel M.</span></p>
+            <div class="mt-4 text-center text-sm text-gray-500">
+                <button onclick="location.href='/'" class="text-green-600 mt-2">Back to Home</button>
+            </div>
+        </div>
+    </div>
+    <script>
+    const map = L.map('map').setView([0.3136, 32.5811], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    const riderMarker = L.marker([0.3136, 32.5811]).addTo(map);
+    riderMarker.bindPopup('🛵 Rider is here!').openPopup();
+    let lat = 0.3136, lng = 32.5811;
+    setInterval(() => {
+        lat += (Math.random() - 0.5) * 0.001;
+        lng += (Math.random() - 0.5) * 0.001;
+        riderMarker.setLatLng([lat, lng]);
+        const statuses = ['In Transit', 'Arriving Soon', 'Delivered'];
+        document.getElementById('orderStatus').textContent = statuses[Math.floor(Math.random() * statuses.length)];
+    }, 5000);
+    </script>
+</body>
+</html>
