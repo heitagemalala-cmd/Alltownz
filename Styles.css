@@ -1,0 +1,17 @@
+:root {
+    --primary-green: #00A859;
+    --dark-green: #008040;
+    --white: #FFFFFF;
+    --black: #000000;
+    --gray: #F5F5F5;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--gray); }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: var(--primary-green); border-radius: 3px; }
+.btn-primary { background: var(--primary-green); color: var(--white); padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+.btn-primary:hover { background: var(--dark-green); transform: translateY(-1px); }
+.card { background: var(--white); border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
+.search-input { width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 12px; outline: none; }
+.search-input:focus { border-color: var(--primary-green); }
+@media (max-width: 480px) { .container { padding: 12px; } }
