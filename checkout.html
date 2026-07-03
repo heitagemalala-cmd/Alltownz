@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - AllTownz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-50">
+    <div x-data="checkoutApp()" class="max-w-md mx-auto p-4 bg-white min-h-screen shadow-lg">
+        <h1 class="text-2xl font-bold text-green-600 mb-4">🛒 Checkout</h1>
+        <div id="cart-items" class="space-y-3 mb-4">
+            <template x-for="(item, index) in cart">
+                <div class="bg-white p-3 rounded-lg shadow flex justify-between items-center border">
+                    <div>
+                        <p class="font-semibold" x-text="item.name"></p>
+                        <p class="text-sm text-gray-600">Qty: 1</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <p class="text-green-600 font-bold" x-text="'UGX '+item.price.toLocaleString()"></p>
+                        <button @click="removeItem(index)" class="text-red-500 text-xl">×</button>
+                    </div>
+                </div>
+            </template>
+            <template x-if="cart.length === 0">
+                <div class="text-center py-8 text-gray-500"><p>Your cart is empty!</p><a href="/" class="text-green-600 underline">Shop now</a></div>
+            </template>
+        </div>
+        <div x-show="cart.length > 0" class="bg-black text-white p-4 rounded-lg mb-4">
+            <div class="flex justify-between"><span>Total</span><span class="text-xl font-bold" x-text="'UGX '+total.toLocaleString()"></span></div>
+        </div>
+        <div x-show="cart.length > 0">
+            <h3 class="font-bold mb-2">Payment Method</h3>
+            <div class="space-y-2 mb-4">
+                <label class="block bg-white p-3 rounded-lg shadow cursor-pointer border-2 hover:border-green-500">
+                    <input type="radio" name="payment" value="mtn" x-model="paymentMethod"><span class="ml-2">MTN Mobile Money</span>
+                </label>
+                <label class="block bg-white p-3 rounded-lg shadow cursor-pointer border-2 hover:border-green-500">
+                    <input type="radio" name="payment" value="airtel" x-model="paymentMethod"><span class="ml-2">Airtel Money</span>
+                </label>
+            </div>
+            <button @click="placeOrder()" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-green-700">Pay Now</button>
+        </div>
+    </div>
+    <script>
+    function checkoutApp() {
+        return {
+            cart: [],
+            paymentMethod: 'mtn',
+            get total() { return this.cart.reduce((sum, item) => sum + item.price, 0); },
+            init() {
+                const saved = localStorage.getItem('cart');
+                if(saved) this.cart = JSON.parse(saved);
+            },
+            removeItem(index) {
+                this.cart.splice(index, 1);
+                localStorage.setItem('cart', JSON.stringify(this.cart));
+            },
+            async placeOrder() {
+                if(this.cart.length === 0) return alert('Cart is empty!');
+                const orderData = { user_id: 1, items: this.cart.map(item => ({ product_id: item.id, quantity: 1, price: item.price })), total: this.total, payment_method: this.paymentMethod, delivery_address: 'Kampala, Uganda' };
+                const res = await fetch('/api/orders', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+                const result = await res.json();
+                if(result.order_id) {
+                    alert(`✅ Order placed! ID: ${result.order_id}`);
+                    localStorage.removeItem('cart');
+                    window.location.href = '/tracking.html';
+                } else {
+                    alert('❌ Failed to place order.');
+                }
+            }
+        }
+    }
+    </script>
+</body>
+</html>
