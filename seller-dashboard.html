@@ -71,3 +71,55 @@
             myProducts: [],
             async init() {
                 if(!localStorage.getItem('token')) {
+                    alert('Please login as a seller!');
+                    window.location.href = '/login.html';
+                }
+                if(this.user.shop) {
+                    const res = await fetch('/api/products');
+                    const data = await res.json();
+                    this.myProducts = data.filter(p => p.shop_id === this.user.shop.id);
+                }
+            },
+            async registerShop() {
+                if(!this.newShop.name) return alert('Enter a shop name');
+                const res = await fetch('/api/shops/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ owner_id: this.user.id, name: this.newShop.name, description: this.newShop.description })
+                });
+                const data = await res.json();
+                if(data.shop) {
+                    this.user.shop = data.shop;
+                    localStorage.setItem('user', JSON.stringify(this.user));
+                    alert('✅ Shop registered! Waiting for admin approval.');
+                    location.reload();
+                } else {
+                    alert('❌ ' + data.error);
+                }
+            },
+            async addProduct() {
+                if(!this.newProduct.name || !this.newProduct.price) return alert('Fill in all details');
+                const res = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ shop_id: this.user.shop.id, name: this.newProduct.name, price: parseInt(this.newProduct.price), category: this.newProduct.category || 'General', stock: 10 })
+                });
+                const data = await res.json();
+                if(data.id) {
+                    this.myProducts.push(data);
+                    this.newProduct = { name: '', price: '', category: '' };
+                    alert('✅ Product added!');
+                } else {
+                    alert('❌ ' + data.error);
+                }
+            }
+        }
+    }
+    function logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login.html';
+    }
+    </script>
+</body>
+</html>
