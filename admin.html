@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - AllTownz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-50">
+    <div x-data="adminApp()" class="max-w-lg mx-auto p-4 bg-white min-h-screen shadow-lg">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-extrabold text-gray-900">🛡️ Admin Panel</h1>
+            <button onclick="logout()" class="text-sm text-red-500 font-bold hover:underline">Logout</button>
+        </div>
+        <div class="flex gap-2 mb-6 bg-gray-100 p-1 rounded-xl">
+            <button @click="tab='shops'" :class="tab === 'shops' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-200 text-gray-600'" class="flex-1 py-2.5 rounded-lg font-bold text-sm transition">🏪 Shops</button>
+            <button @click="tab='users'" :class="tab === 'users' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-200 text-gray-600'" class="flex-1 py-2.5 rounded-lg font-bold text-sm transition">👤 Users</button>
+        </div>
+        <div x-show="tab === 'shops'">
+            <div x-show="pendingShops.length === 0" class="text-center text-gray-400 py-10 bg-gray-50 rounded-xl">
+                <p class="text-4xl mb-2">✅</p>
+                <p class="font-medium">All shops are approved!</p>
+            </div>
+            <div x-show="pendingShops.length > 0" class="space-y-4">
+                <template x-for="shop in pendingShops">
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg shadow-sm flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-lg" x-text="shop.name"></h3>
+                            <p class="text-sm text-gray-600 mb-2" x-text="shop.description"></p>
+                        </div>
+                        <div>
+                            <button @click="approveShop(shop.id)" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-green-700">✅ Approve</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+        <div x-show="tab === 'users'">
+            <div class="space-y-3">
+                <template x-for="user in users">
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-gray-800" x-text="user.name"></p>
+                            <p class="text-xs text-gray-500" x-text="user.email"></p>
+                            <span :class="user.verified ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'" class="text-[10px] px-2 py-0.5 rounded-full font-bold">
+                                <span x-text="user.verified ? 'ACTIVE' : 'DISABLED'"></span>
+                            </span>
+                        </div>
+                        <button @click="toggleUser(user.id)" class="text-sm font-bold px-4 py-1.5 rounded-full border-2 transition"
+                                :class="user.verified ? 'border-red-500 text-red-500 hover:bg-red-500 hover:text-white' : 'border-green-500 text-green-500 hover:bg-green-500 hover:text-white'">
+                            <span x-text="user.verified ? 'DISABLE' : 'ENABLE'"></span>
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+    <script>
+    function adminApp() {
+        return {
+            tab: 'shops',
+            users: [],
+            pendingShops: [],
+            async init() {
+                if(!localStorage.getItem('token')) {
+                    alert('Admin access only!');
+                    window.location.href = '/login.html';
+                }
+                
+                // Fetch pending shops from backend
+                try {
+                    const res = await fetch('/api/admin/pending-shops');
+                    const data = await res.json();
+                    this.pendingShops = data;
+                } catch {
+                    this.pendingShops = [];
+                }
+
+                // Fetch users (mocked for demo)
+                this.users = [
+                    {id: 2, name: 'John Seller', email: 'seller@gmail.com', verified: true},
+                    {id: 3, name: 'Jane Customer', email: 'buyer@gmail.com', verified: true}
+                ];
+            },
+            async approveShop(id) {
+                const res = await fetch(`/api/admin/approve-shop/${id}`, { method: 'PUT' });
+                const data = await res.json();
+                if(data.message) {
+                    this.pendingShops = this.pendingShops.filter(s => s.id !== id);
+                    alert(`✅ ${data.message}`);
+                } else {
+                    alert('❌ ' + data.error);
+                }
+            },
+            toggleUser(id) {
+                const user = this.users.find(u => u.id === id);
+                if (user) {
+                    user.verified = !user.verified;
+                    alert(`🔄 User "${user.name}" ${user.verified ? 'Enabled' : 'Disabled'}`);
+                }
+            }
+        }
+    }
+    function logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login.html';
+    }
+    </script>
+</body>
+</html>

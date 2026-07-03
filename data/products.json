@@ -1,0 +1,62 @@
+[
+    {
+        "id": 1,
+        "seller_id": 1,
+        "name": "Samsung Galaxy A54",
+        "price": 850000,
+        "stock": 15,
+        "category": "Electronics",
+        "image": "https://via.placeholder.com/150",
+        "description": "6.4-inch Super AMOLED, 50MP camera, 5000mAh battery"
+    },
+    {
+        "id": 2,
+        "seller_id": 1,
+        "name": "Nike Air Max",
+        "price": 350000,
+        "stock": 7,
+        "category": "Fashion",
+        "image": "https://via.placeholder.com/150",
+        "description": "Comfortable running shoes with air cushion"
+    },
+    {
+        "id": 3,
+        "seller_id": 1,
+        "name": "Wireless Earbuds",
+        "price": 120000,
+        "stock": 30,
+        "category": "Electronics",
+        "image": "https://via.placeholder.com/150",
+        "description": "Bluetooth 5.3, 24hr battery life, noise cancellation"
+    },
+    {
+        "id": 4,
+        "seller_id": 1,
+        "name": "Smart Watch Pro",
+        "price": 250000,
+        "stock": 12,
+        "category": "Electronics",
+        "image": "https://via.placeholder.com/150",
+        "description": "Heart rate monitor, GPS, 7 days battery"
+    },
+    {
+        "id": 5,
+        "seller_id": 1,
+        "name": "Backpack - 20L",
+        "price": 80000,
+        "stock": 20,
+        "category": "Fashion",
+        "image": "https://via.placeholder.com/150",
+        "description": "Waterproof, laptop compartment, multiple pockets"
+    },
+    {
+        "id": 6,
+        "seller_id": 1,
+        "name": "Sunglasses",
+        "price": 45000,
+        "stock": 25,
+        "category": "Fashion",
+        "image": "https://via.placeholder.com/150",
+        "description": "Polarized, UV protection, stylish design"
+    }
+]
