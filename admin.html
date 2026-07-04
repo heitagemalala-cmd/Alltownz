@@ -2,110 +2,248 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - AllTownz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AllTownz Admin HQ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; }
+        .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; transition: all 0.2s; cursor: pointer; color: #6b7280; }
+        .sidebar-item:hover { background: #e5e7eb; color: #111827; }
+        .sidebar-item.active { background: #00A859; color: white; }
+        .stat-card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    </style>
 </head>
-<body class="bg-gray-50">
-    <div x-data="adminApp()" class="max-w-lg mx-auto p-4 bg-white min-h-screen shadow-lg">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-extrabold text-gray-900">🛡️ Admin Panel</h1>
-            <button onclick="logout()" class="text-sm text-red-500 font-bold hover:underline">Logout</button>
-        </div>
-        <div class="flex gap-2 mb-6 bg-gray-100 p-1 rounded-xl">
-            <button @click="tab='shops'" :class="tab === 'shops' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-200 text-gray-600'" class="flex-1 py-2.5 rounded-lg font-bold text-sm transition">🏪 Shops</button>
-            <button @click="tab='users'" :class="tab === 'users' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-200 text-gray-600'" class="flex-1 py-2.5 rounded-lg font-bold text-sm transition">👤 Users</button>
-        </div>
-        <div x-show="tab === 'shops'">
-            <div x-show="pendingShops.length === 0" class="text-center text-gray-400 py-10 bg-gray-50 rounded-xl">
-                <p class="text-4xl mb-2">✅</p>
-                <p class="font-medium">All shops are approved!</p>
+<body>
+
+    <div x-data="adminApp()" x-init="init()" class="flex flex-col md:flex-row min-h-screen">
+        
+        <!-- SIDEBAR -->
+        <aside class="w-full md:w-64 bg-white border-b md:border-r border-gray-200 p-4 fixed md:static top-0 z-50 h-auto md:h-screen overflow-y-auto">
+            <div class="flex items-center gap-2 mb-6">
+                <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold">A</div>
+                <h1 class="text-lg font-bold text-gray-800">AllTownz <span class="text-green-600 text-sm">HQ</span></h1>
             </div>
-            <div x-show="pendingShops.length > 0" class="space-y-4">
-                <template x-for="shop in pendingShops">
-                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg shadow-sm flex justify-between items-start">
-                        <div>
-                            <h3 class="font-bold text-gray-800 text-lg" x-text="shop.name"></h3>
-                            <p class="text-sm text-gray-600 mb-2" x-text="shop.description"></p>
+            
+            <nav class="space-y-1">
+                <div @click="tab='dashboard'" :class="tab === 'dashboard' ? 'active' : ''" class="sidebar-item"><i class="fas fa-th-large w-5"></i> Dashboard</div>
+                <div @click="tab='inventory'" :class="tab === 'inventory' ? 'active' : ''" class="sidebar-item"><i class="fas fa-box w-5"></i> Inventory</div>
+                <div @click="tab='orders'" :class="tab === 'orders' ? 'active' : ''" class="sidebar-item"><i class="fas fa-truck w-5"></i> Orders</div>
+                <div @click="tab='users'" :class="tab === 'users' ? 'active' : ''" class="sidebar-item"><i class="fas fa-users w-5"></i> Users</div>
+                <div @click="tab='finance'" :class="tab === 'finance' ? 'active' : ''" class="sidebar-item"><i class="fas fa-coins w-5"></i> Finance & Tax</div>
+                <div @click="tab='ads'" :class="tab === 'ads' ? 'active' : ''" class="sidebar-item"><i class="fas fa-ad w-5"></i> Advertising</div>
+                <div @click="tab='system'" :class="tab === 'system' ? 'active' : ''" class="sidebar-item"><i class="fas fa-cog w-5"></i> System</div>
+            </nav>
+            
+            <div class="mt-6 pt-4 border-t border-gray-200">
+                <button @click="logout()" class="w-full bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-600">Exit HQ</button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 p-4 md:p-6 mt-20 md:mt-0 w-full">
+            
+            <!-- HEADER -->
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800" x-text="tab.charAt(0).toUpperCase() + tab.slice(1) + ' Management'"></h2>
+                <div class="text-xs bg-gray-200 px-3 py-1 rounded-full">Logged in as <span class="font-bold text-green-600">Admin</span></div>
+            </div>
+
+            <!-- ============ DASHBOARD ============ -->
+            <div x-show="tab === 'dashboard'">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="stat-card text-center"><p class="text-xs text-gray-500">Users</p><p class="text-xl font-bold" x-text="users.length"></p></div>
+                    <div class="stat-card text-center"><p class="text-xs text-gray-500">Products</p><p class="text-xl font-bold" x-text="products.length"></p></div>
+                    <div class="stat-card text-center"><p class="text-xs text-gray-500">Orders</p><p class="text-xl font-bold" x-text="orders.length"></p></div>
+                    <div class="stat-card text-center border border-green-500"><p class="text-xs text-gray-500">Revenue</p><p class="text-xl font-bold text-green-600" x-text="'UGX '+totalRevenue.toLocaleString()"></p></div>
+                </div>
+                <div class="bg-white p-6 rounded-lg border border-gray-200 text-center text-gray-500">
+                    <i class="fas fa-chart-line text-4xl text-green-600 mb-2"></i>
+                    <p>Dashboard running with <span x-text="products.length"></span> products.</p>
+                </div>
+            </div>
+
+            <!-- ============ INVENTORY ============ -->
+            <div x-show="tab === 'inventory'">
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-sm text-gray-500" x-text="'Showing ' + products.length + ' products'"></p>
+                    <input type="text" x-model="inventorySearch" placeholder="🔍 Search products..." class="border rounded px-2 py-1 text-sm w-1/2 md:w-64">
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <template x-for="prod in filteredProducts">
+                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="font-bold text-sm truncate" x-text="prod.name"></p>
+                                <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full" x-text="getShopName(prod.shop_id)"></span>
+                            </div>
+                            <p class="text-green-600 text-sm font-bold" x-text="'UGX '+prod.price.toLocaleString()"></p>
+                            <p class="text-xs text-gray-500">Stock: <span x-text="prod.stock"></span></p>
+                            <button @click="deleteProduct(prod.id)" class="mt-2 w-full text-xs bg-red-50 text-red-600 border border-red-200 py-1 rounded">Delete</button>
                         </div>
-                        <div>
-                            <button @click="approveShop(shop.id)" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-green-700">✅ Approve</button>
+                    </template>
+                </div>
+            </div>
+
+            <!-- ============ ORDERS ============ -->
+            <div x-show="tab === 'orders'">
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-sm text-gray-500" x-text="'Showing ' + orders.length + ' orders'"></p>
+                    <input type="text" x-model="orderSearch" placeholder="🔍 Search Order ID..." class="border rounded px-2 py-1 text-sm w-1/2 md:w-64">
+                </div>
+                <div class="space-y-3">
+                    <template x-for="order in filteredOrders">
+                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <p class="font-bold text-sm" x-text="'#'+order.order_id"></p>
+                                    <p class="text-xs text-gray-500">Customer: <span x-text="order.user_id"></span></p>
+                                </div>
+                                <span class="text-xs px-2 py-1 rounded-full font-bold" :class="{'bg-yellow-100 text-yellow-700': order.status === 'pending', 'bg-blue-100 text-blue-700': order.status === 'shipped', 'bg-green-100 text-green-700': order.status === 'delivered', 'bg-red-100 text-red-700': order.status === 'cancelled'}" x-text="order.status"></span>
+                            </div>
+                            <p class="text-green-600 font-bold text-sm mt-2" x-text="'UGX '+order.total.toLocaleString()"></p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- ============ USERS ============ -->
+            <div x-show="tab === 'users'">
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-sm text-gray-500" x-text="'Showing ' + users.length + ' users'"></p>
+                    <input type="text" x-model="userSearch" placeholder="🔍 Search users..." class="border rounded px-2 py-1 text-sm w-1/2 md:w-64">
+                </div>
+                <div class="space-y-3">
+                    <template x-for="user in filteredUsers">
+                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex justify-between items-center">
+                            <div>
+                                <p class="font-bold text-sm" x-text="user.name"></p>
+                                <p class="text-xs text-gray-500" x-text="user.email"></p>
+                                <span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full" x-text="user.role"></span>
+                            </div>
+                            <button @click="toggleUser(user.id)" class="text-xs font-bold border px-3 py-1 rounded" :class="user.verified ? 'border-red-500 text-red-500' : 'border-green-500 text-green-500'" x-text="user.verified ? 'BAN' : 'UNBAN'"></button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- ============ FINANCE ============ -->
+            <div x-show="tab === 'finance'">
+                <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-lg mb-4">💰 Finance & Tax</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-xs text-gray-500">Commission (%)</p>
+                            <div class="flex gap-2 mt-1"><input type="number" x-model="commissionFee" class="border rounded px-2 py-1 w-20 text-sm"><button @click="updateCommission()" class="bg-green-600 text-white px-3 py-1 rounded text-xs">Update</button></div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-xs text-gray-500">Tax Rate (%)</p>
+                            <div class="flex gap-2 mt-1"><input type="number" x-model="taxRate" class="border rounded px-2 py-1 w-20 text-sm"><button @click="updateTax()" class="bg-blue-600 text-white px-3 py-1 rounded text-xs">Update</button></div>
                         </div>
                     </div>
-                </template>
+                </div>
             </div>
-        </div>
-        <div x-show="tab === 'users'">
-            <div class="space-y-3">
-                <template x-for="user in users">
-                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-gray-800" x-text="user.name"></p>
-                            <p class="text-xs text-gray-500" x-text="user.email"></p>
-                            <span :class="user.verified ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'" class="text-[10px] px-2 py-0.5 rounded-full font-bold">
-                                <span x-text="user.verified ? 'ACTIVE' : 'DISABLED'"></span>
-                            </span>
+
+            <!-- ============ ADVERTISING ============ -->
+            <div x-show="tab === 'ads'">
+                <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-lg mb-4">📢 Advertising</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="font-bold text-sm mb-2">Banners</p>
+                            <div class="flex gap-2 mb-2"><input type="text" x-model="newBanner" placeholder="Title" class="border rounded px-2 py-1 text-sm w-full"><button @click="addBanner()" class="bg-green-600 text-white px-3 py-1 rounded text-xs">Add</button></div>
+                            <template x-for="b in banners"><div class="flex justify-between text-xs bg-white p-2 border rounded mb-1"><span x-text="b"></span><button @click="banners = banners.filter(x => x !== b)" class="text-red-500">✕</button></div></template>
                         </div>
-                        <button @click="toggleUser(user.id)" class="text-sm font-bold px-4 py-1.5 rounded-full border-2 transition"
-                                :class="user.verified ? 'border-red-500 text-red-500 hover:bg-red-500 hover:text-white' : 'border-green-500 text-green-500 hover:bg-green-500 hover:text-white'">
-                            <span x-text="user.verified ? 'DISABLE' : 'ENABLE'"></span>
-                        </button>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="font-bold text-sm mb-2">Coupons</p>
+                            <div class="flex gap-2 mb-2"><input type="text" x-model="newCouponCode" placeholder="Code" class="border rounded px-2 py-1 text-sm w-1/2"><input type="number" x-model="newCouponDiscount" placeholder="%" class="border rounded px-2 py-1 text-sm w-1/4"><button @click="addCoupon()" class="bg-yellow-600 text-white px-3 py-1 rounded text-xs">Add</button></div>
+                            <template x-for="c in coupons"><div class="flex justify-between text-xs bg-white p-2 border rounded mb-1"><span class="font-bold text-green-600" x-text="c.code"></span><span x-text="c.discount+'%'"></span><button @click="coupons = coupons.filter(x => x !== c)" class="text-red-500">✕</button></div></template>
+                        </div>
                     </div>
-                </template>
+                </div>
             </div>
-        </div>
+
+            <!-- ============ SYSTEM ============ -->
+            <div x-show="tab === 'system'">
+                <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-lg mb-4">⚙️ System</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button @click="createBackup()" class="bg-blue-600 text-white py-3 rounded-lg text-sm font-bold">💾 Backup</button>
+                        <button @click="loadAuditLogs()" class="bg-gray-600 text-white py-3 rounded-lg text-sm font-bold">📜 Audit Logs</button>
+                    </div>
+                    <div x-show="backupMessage" class="mt-2 text-center text-green-600 text-sm" x-text="backupMessage"></div>
+                    <div x-show="auditLogs.length > 0" class="mt-2 bg-gray-50 p-2 rounded text-xs max-h-32 overflow-y-auto">
+                        <template x-for="log in auditLogs"><div class="border-b py-1"><span class="font-bold text-green-600" x-text="log.action"></span> <span class="text-gray-500" x-text="new Date(log.timestamp).toLocaleString()"></span></div></template>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
+
     <script>
     function adminApp() {
         return {
-            tab: 'shops',
-            users: [],
-            pendingShops: [],
+            tab: 'dashboard',
+            users: [], products: [], orders: [], shops: [],
+            commissionFee: 10, taxRate: 18,
+            inventorySearch: '', orderSearch: '', userSearch: '',
+            banners: [], coupons: [], newBanner: '', newCouponCode: '', newCouponDiscount: 10,
+            auditLogs: [], backupMessage: '',
+            
+            // Fallback Data (Guarantees the page never goes blank)
+            fallbackUsers: [{id:1,name:'Admin',email:'admin@alltownz.com',role:'admin',verified:true},{id:2,name:'John Seller',email:'seller@gmail.com',role:'seller',verified:true},{id:3,name:'Jane Buyer',email:'buyer@gmail.com',role:'customer',verified:true}],
+            fallbackProducts: [{id:1,name:'Samsung A54',price:850000,stock:15,shop_id:1},{id:2,name:'Nike Air Max',price:350000,stock:7,shop_id:1}],
+            fallbackOrders: [{id:1,order_id:'ALL-001',total:850000,status:'pending',user_id:3}],
+            fallbackShops: [{id:1,name:'Kampala Electronics'}],
+            
+            get totalRevenue() { return this.orders.reduce((sum, o) => sum + (o.total || 0), 0); },
+            
+            // Filters
+            get filteredProducts() { return this.inventorySearch ? this.products.filter(p => p.name.toLowerCase().includes(this.inventorySearch.toLowerCase())) : this.products; },
+            get filteredOrders() { return this.orderSearch ? this.orders.filter(o => o.order_id.toLowerCase().includes(this.orderSearch.toLowerCase())) : this.orders; },
+            get filteredUsers() { return this.userSearch ? this.users.filter(u => u.name.toLowerCase().includes(this.userSearch.toLowerCase()) || u.email.toLowerCase().includes(this.userSearch.toLowerCase())) : this.users; },
+            
             async init() {
-                if(!localStorage.getItem('token')) {
-                    alert('Admin access only!');
-                    window.location.href = '/login.html';
-                }
-                
-                // Fetch pending shops from backend
+                if(!localStorage.getItem('token')) { alert('Login required'); window.location.href = '/login.html'; return; }
+                await this.loadData();
+                this.banners = JSON.parse(localStorage.getItem('alltownz_banners') || '[]');
+                this.coupons = JSON.parse(localStorage.getItem('alltownz_coupons') || '[]');
+            },
+            
+            async loadData() {
                 try {
-                    const res = await fetch('/api/admin/pending-shops');
-                    const data = await res.json();
-                    this.pendingShops = data;
-                } catch {
-                    this.pendingShops = [];
-                }
-
-                // Fetch users (mocked for demo)
-                this.users = [
-                    {id: 2, name: 'John Seller', email: 'seller@gmail.com', verified: true},
-                    {id: 3, name: 'Jane Customer', email: 'buyer@gmail.com', verified: true}
-                ];
-            },
-            async approveShop(id) {
-                const res = await fetch(`/api/admin/approve-shop/${id}`, { method: 'PUT' });
-                const data = await res.json();
-                if(data.message) {
-                    this.pendingShops = this.pendingShops.filter(s => s.id !== id);
-                    alert(`✅ ${data.message}`);
-                } else {
-                    alert('❌ ' + data.error);
+                    const u = await fetch('/api/admin/users').then(r=>r.json());
+                    const p = await fetch('/api/products').then(r=>r.json());
+                    const o = await fetch('/api/orders/all').then(r=>r.json());
+                    const s = await fetch('/api/shops/all').then(r=>r.json());
+                    this.users = u.length ? u : this.fallbackUsers;
+                    this.products = p.length ? p : this.fallbackProducts;
+                    this.orders = o.length ? o : this.fallbackOrders;
+                    this.shops = s.length ? s : this.fallbackShops;
+                } catch(e) {
+                    console.log('Using fallback data');
+                    this.users = this.fallbackUsers;
+                    this.products = this.fallbackProducts;
+                    this.orders = this.fallbackOrders;
+                    this.shops = this.fallbackShops;
                 }
             },
-            toggleUser(id) {
-                const user = this.users.find(u => u.id === id);
-                if (user) {
-                    user.verified = !user.verified;
-                    alert(`🔄 User "${user.name}" ${user.verified ? 'Enabled' : 'Disabled'}`);
-                }
-            }
+            
+            getShopName(id) { const shop = this.shops.find(s => s.id === id); return shop ? shop.name : 'Unknown'; },
+            
+            addBanner() { if(!this.newBanner) return; this.banners.push(this.newBanner); this.newBanner = ''; localStorage.setItem('alltownz_banners', JSON.stringify(this.banners)); },
+            addCoupon() { if(!this.newCouponCode) return; this.coupons.push({code:this.newCouponCode.toUpperCase(), discount:this.newCouponDiscount}); this.newCouponCode = ''; localStorage.setItem('alltownz_coupons', JSON.stringify(this.coupons)); },
+            
+            async toggleUser(id) { await fetch(`/api/admin/toggle-user/${id}`, {method:'PUT'}); this.loadData(); },
+            async deleteProduct(id) { if(!confirm('Delete?')) return; await fetch(`/api/products/${id}`, {method:'DELETE'}); this.loadData(); },
+            async updateCommission() { await fetch('/api/admin/commission', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fee:this.commissionFee})}); alert('Updated'); },
+            async updateTax() { await fetch('/api/admin/tax', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tax_rate:this.taxRate})}); alert('Updated'); },
+            async loadAuditLogs() { const res = await fetch('/api/admin/audit-logs'); this.auditLogs = await res.json(); },
+            async createBackup() { const res = await fetch('/api/admin/backup', {method:'POST'}); const data = await res.json(); this.backupMessage = '✅ ' + data.message; setTimeout(()=>this.backupMessage='',5000); },
+            
+            logout() { localStorage.clear(); window.location.href = '/login.html'; }
         }
-    }
-    function logout() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login.html';
     }
     </script>
 </body>

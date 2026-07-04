@@ -1,0 +1,119 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@alltownz.com",
+      "password": "admin123",
+      "name": "System Admin",
+      "role": "admin",
+      "verified": true
+    },
+    {
+      "id": 2,
+      "email": "seller@gmail.com",
+      "password": "seller123",
+      "name": "John Doe",
+      "role": "seller",
+      "verified": true
+    },
+    {
+      "id": 3,
+      "email": "buyer@gmail.com",
+      "password": "buyer123",
+      "name": "Jane Customer",
+      "role": "customer",
+      "verified": true
+    }
+  ],
+  "shops": [
+    {
+      "id": 1,
+      "owner_id": 2,
+      "name": "Kampala Electronics Hub",
+      "description": "Best gadgets in town",
+      "approved": true
+    },
+    {
+      "id": 2,
+      "owner_id": 1,
+      "name": "Go",
+      "description": "Gshsbsbs",
+      "approved": true
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "shop_id": 1,
+      "name": "Samsung Galaxy A54",
+      "price": 850000,
+      "stock": 15,
+      "category": "Electronics",
+      "image": "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=200&h=200&fit=crop"
+    },
+    {
+      "id": 2,
+      "shop_id": 1,
+      "name": "Nike Air Max",
+      "price": 350000,
+      "stock": 7,
+      "category": "Fashion",
+      "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop"
+    },
+    {
+      "id": 3,
+      "shop_id": 1,
+      "name": "Wireless Earbuds",
+      "price": 120000,
+      "stock": 30,
+      "category": "Electronics",
+      "image": "https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=200&h=200&fit=crop"
+    },
+    {
+      "id": 4,
+      "shop_id": 1,
+      "name": "Smart Watch Pro",
+      "price": 250000,
+      "stock": 12,
+      "category": "Electronics",
+      "image": "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=200&h=200&fit=crop"
+    },
+    {
+      "id": 5,
+      "shop_id": 1,
+      "name": "Ego",
+      "price": 2500,
+      "category": "Fashon",
+      "stock": 10,
+      "image": "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=200&h=200&fit=crop"
+    }
+  ],
+  "orders": [
+    {
+      "user_id": 1,
+      "items": [
+        {
+          "product_id": 4,
+          "quantity": 1,
+          "price": 250000
+        }
+      ],
+      "total": 250000,
+      "payment_method": "airtel",
+      "delivery_address": "Kampala, Uganda",
+      "id": 1783151261336,
+      "order_id": "ALL-MR627YXL",
+      "created_at": "2026-07-04T07:47:41.337Z",
+      "status": "pending"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": 1783150471703,
+      "timestamp": "2026-07-04T07:34:31.703Z",
+      "action": "SYSTEM_BACKUP",
+      "admin_id": 1,
+      "details": "Backup created: backup-2026-07-04T07-34-31-701Z.json"
+    }
+  ]
+}

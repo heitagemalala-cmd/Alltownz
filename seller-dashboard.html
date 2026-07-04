@@ -2,124 +2,469 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seller Dashboard - AllTownz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vendor HQ - AllTownz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; }
+        .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; transition: all 0.2s; cursor: pointer; color: #6b7280; }
+        .sidebar-item:hover { background: #e5e7eb; }
+        .sidebar-item.active { background: #00A859; color: white; }
+        .variant-chip { display: inline-block; padding: 2px 8px; background: #e5e7eb; border-radius: 12px; font-size: 10px; margin: 2px; }
+        .spec-item { display: flex; gap: 10px; padding: 4px 0; border-bottom: 1px solid #f3f4f6; font-size: 12px; }
+        .finance-card { background: white; border-radius: 12px; padding: 16px; border: 1px solid #e5e7eb; }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div x-data="sellerApp()" class="max-w-lg mx-auto p-4 bg-white min-h-screen">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-green-600">📦 My Shop</h1>
-            <button onclick="logout()" class="text-sm text-red-500 font-semibold">Logout</button>
-        </div>
+<body>
+
+    <div x-data="sellerApp()" x-init="init()" class="flex flex-col min-h-screen bg-gray-50">
         
-        <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <p>Welcome, <strong x-text="user.name"></strong></p>
-            <p class="text-sm">Role: <span class="text-green-600 font-medium" x-text="user.role"></span></p>
+        <!-- TOP MOBILE HEADER -->
+        <div class="bg-white px-4 py-3 border-b border-gray-200 shadow-sm flex justify-between items-center sticky top-0 z-30 md:hidden">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">V</div>
+                <span class="font-bold text-gray-800">Vendor HQ</span>
+            </div>
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-600 text-lg">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
 
-        <div x-show="!user.shop" class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-4">
-            <h2 class="font-bold text-yellow-800">🚀 Register Your Business</h2>
-            <p class="text-sm text-yellow-700 mb-3">To start selling, register your shop. The Admin will review and approve it.</p>
-            <input type="text" x-model="newShop.name" placeholder="Shop Name" class="w-full p-2 border border-yellow-300 rounded mb-2">
-            <textarea x-model="newShop.description" placeholder="Short description" class="w-full p-2 border border-yellow-300 rounded mb-2"></textarea>
-            <button @click="registerShop()" class="w-full bg-yellow-600 text-white py-2 rounded font-semibold hover:bg-yellow-700">Register Shop</button>
-        </div>
-
-        <div x-show="user.shop" class="mb-4 p-3 rounded-lg border" 
-             :class="user.shop.approved ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
-            <div class="flex justify-between items-center">
-                <div>
-                    <p class="font-bold text-lg" x-text="user.shop.name"></p>
-                    <p class="text-sm" x-text="user.shop.approved ? '✅ Active & Verified' : '⏳ Pending Admin Approval'"></p>
+        <!-- SIDEBAR -->
+        <aside :class="mobileMenuOpen ? 'block' : 'hidden'" class="md:block fixed md:static top-0 left-0 w-full md:w-64 bg-white h-full z-50 border-r border-gray-200 p-4 overflow-y-auto shadow-2xl md:shadow-none transition-all">
+            <div class="flex justify-between items-center mb-6 md:hidden">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">V</div>
+                    <span class="font-bold text-gray-800">Vendor HQ</span>
                 </div>
-                <span :class="user.shop.approved ? 'bg-green-600' : 'bg-gray-400'" class="text-white text-xs px-3 py-1 rounded-full">Status</span>
+                <button @click="mobileMenuOpen = false" class="text-gray-500 text-lg"><i class="fas fa-times"></i></button>
             </div>
-        </div>
 
-        <div x-show="user.shop && user.shop.approved" class="bg-white border-2 border-green-100 p-4 rounded-lg mb-4 shadow-sm">
-            <h3 class="font-bold mb-3 text-gray-800">➕ Add New Product</h3>
-            <input type="text" x-model="newProduct.name" placeholder="Product name" class="w-full p-2 border rounded mb-2">
-            <input type="number" x-model="newProduct.price" placeholder="Price (UGX)" class="w-full p-2 border rounded mb-2">
-            <input type="text" x-model="newProduct.category" placeholder="Category (e.g. Fashion, Electronics)" class="w-full p-2 border rounded mb-2">
-            <button @click="addProduct()" class="w-full bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700">Upload Product</button>
-        </div>
+            <div class="flex items-center gap-2 mb-6 hidden md:flex">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">V</div>
+                <h1 class="text-lg font-bold text-gray-800">Vendor <span class="text-blue-600 text-sm">HQ</span></h1>
+            </div>
+            
+            <nav class="space-y-1">
+                <div @click="tab='dashboard'; mobileMenuOpen=false" :class="tab === 'dashboard' ? 'active' : ''" class="sidebar-item"><i class="fas fa-th-large w-5"></i> Dashboard</div>
+                <div @click="tab='products'; mobileMenuOpen=false" :class="tab === 'products' ? 'active' : ''" class="sidebar-item"><i class="fas fa-box w-5"></i> Products</div>
+                <div @click="tab='orders'; mobileMenuOpen=false" :class="tab === 'orders' ? 'active' : ''" class="sidebar-item"><i class="fas fa-truck w-5"></i> Orders</div>
+                <div @click="tab='finance'; mobileMenuOpen=false" :class="tab === 'finance' ? 'active' : ''" class="sidebar-item"><i class="fas fa-coins w-5"></i> Finance & Payouts</div>
+            </nav>
+            
+            <div class="mt-6 pt-4 border-t border-gray-200">
+                <button @click="logout()" class="w-full bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-600">Logout</button>
+            </div>
+        </aside>
 
-        <div>
-            <h3 class="font-bold text-gray-800 mb-2">📋 My Inventory</h3>
-            <div class="space-y-2">
-                <template x-for="prod in myProducts">
-                    <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex justify-between items-center">
-                        <div>
-                            <p class="font-semibold text-sm" x-text="prod.name"></p>
-                            <p class="text-green-600 font-bold text-sm" x-text="'UGX '+prod.price.toLocaleString()"></p>
-                        </div>
-                        <span class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600" x-text="prod.category"></span>
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 p-4 md:p-6 w-full md:ml-64">
+            
+            <!-- HEADER -->
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800" x-text="tab.charAt(0).toUpperCase() + tab.slice(1)"></h2>
+                    <p class="text-xs text-gray-500">Welcome back, <span x-text="user.name"></span>!</p>
+                </div>
+                <div class="text-xs bg-gray-200 px-3 py-1 rounded-full">
+                    <span :class="user.shop && user.shop.approved ? 'text-green-600' : 'text-yellow-600'" 
+                          x-text="user.shop && user.shop.approved ? '✅ Verified Seller' : '⏳ Pending Verification'"></span>
+                </div>
+            </div>
+
+            <!-- REGISTRATION -->
+            <div x-show="!user.shop" class="bg-yellow-50 border border-yellow-200 p-6 rounded-xl mb-6">
+                <h3 class="font-bold text-yellow-800 text-lg">🚀 Register Your Vendor Store</h3>
+                <input type="text" x-model="newShop.name" placeholder="Store Name" class="w-full p-2 border border-yellow-300 rounded mb-2">
+                <button @click="registerShop()" class="w-full bg-yellow-600 text-white py-2 rounded font-bold">Register Store</button>
+            </div>
+
+            <!-- DASHBOARD -->
+            <div x-show="tab === 'dashboard' && user.shop">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm text-center">
+                        <p class="text-xs text-gray-500">Total Products</p>
+                        <p class="text-xl font-bold" x-text="myProducts.length"></p>
                     </div>
-                </template>
-                <div x-show="myProducts.length === 0" class="text-center text-gray-400 text-sm py-6 bg-gray-50 rounded-lg">🛒 No products yet.</div>
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm text-center">
+                        <p class="text-xs text-gray-500">Low Stock Alerts</p>
+                        <p class="text-xl font-bold text-red-600" x-text="lowStockItems.length"></p>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <!-- PRODUCTS -->
+            <div x-show="tab === 'products' && user.shop">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-sm">📦 Your Products (<span x-text="myProducts.length"></span>)</h3>
+                    <button @click="showAddProduct = !showAddProduct" class="bg-green-600 text-white px-3 py-1 rounded text-xs font-bold">+ Add Product</button>
+                </div>
+                
+                <div x-show="showAddProduct" class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm mb-4 space-y-3 max-h-[400px] overflow-y-auto">
+                    <input type="text" x-model="newProduct.name" placeholder="Product Name *" class="w-full p-2 border rounded text-sm">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" x-model="newProduct.price" placeholder="Price (UGX) *" class="p-2 border rounded text-sm">
+                        <input type="number" x-model="newProduct.stock" placeholder="Stock *" class="p-2 border rounded text-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <select x-model="newProduct.type" class="p-2 border rounded text-sm">
+                            <option value="physical">Physical Product</option>
+                            <option value="digital">Digital Product</option>
+                            <option value="service">Service Listing</option>
+                        </select>
+                        <input type="text" x-model="newProduct.category" placeholder="Category" class="p-2 border rounded text-sm">
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-600 mb-1">📸 Multiple Images</p>
+                        <div class="flex gap-2">
+                            <input type="text" x-model="newImage" placeholder="Image URL..." class="p-2 border rounded text-sm flex-1">
+                            <button @click="addImage()" class="bg-gray-200 px-3 py-1 rounded text-xs font-bold">Add</button>
+                        </div>
+                        <div class="mt-1 flex flex-wrap gap-1">
+                            <template x-for="img in newProduct.images">
+                                <span class="bg-gray-100 px-2 py-0.5 rounded text-[10px] flex items-center gap-1">
+                                    🖼️ <span x-text="img.substring(0,20)+'...'"></span>
+                                    <button @click="newProduct.images = newProduct.images.filter(i => i !== img)" class="text-red-500">✕</button>
+                                </span>
+                            </template>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-600 mb-1">🎥 Video</p>
+                        <input type="text" x-model="newProduct.video" placeholder="YouTube/Vimeo URL" class="w-full p-2 border rounded text-sm">
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-600 mb-1">🎨 Variants</p>
+                        <div class="flex gap-2">
+                            <input type="text" x-model="newVariant" placeholder="e.g. Red, XL" class="p-2 border rounded text-sm flex-1">
+                            <button @click="addVariant()" class="bg-gray-200 px-3 py-1 rounded text-xs font-bold">Add</button>
+                        </div>
+                        <div class="mt-1 flex flex-wrap gap-1">
+                            <template x-for="v in newProduct.variants">
+                                <span class="variant-chip" x-text="v"></span>
+                            </template>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-600 mb-1">📋 Specifications</p>
+                        <div class="flex gap-2">
+                            <input type="text" x-model="newSpecKey" placeholder="Key (e.g. Brand)" class="p-2 border rounded text-sm w-1/2">
+                            <input type="text" x-model="newSpecValue" placeholder="Value" class="p-2 border rounded text-sm w-1/2">
+                            <button @click="addSpec()" class="bg-gray-200 px-3 py-1 rounded text-xs font-bold">Add</button>
+                        </div>
+                        <div class="mt-1 bg-gray-50 p-2 rounded">
+                            <template x-for="(val, key) in newProduct.specs">
+                                <div class="spec-item">
+                                    <span class="font-bold text-gray-700" x-text="key+':'"></span>
+                                    <span class="text-gray-600" x-text="val"></span>
+                                    <button @click="deleteSpec(key)" class="ml-auto text-red-500 text-xs">✕</button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-600 mb-1">🏷️ Tags</p>
+                        <div class="flex gap-2">
+                            <input type="text" x-model="newTag" placeholder="e.g. trending, sale" class="p-2 border rounded text-sm flex-1">
+                            <button @click="addTag()" class="bg-gray-200 px-3 py-1 rounded text-xs font-bold">Add</button>
+                        </div>
+                        <div class="mt-1 flex flex-wrap gap-1">
+                            <template x-for="t in newProduct.tags">
+                                <span class="variant-chip bg-blue-100 text-blue-600" x-text="t"></span>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <p class="text-xs font-bold text-gray-600 mb-1">📦 Bundles</p>
+                            <input type="text" x-model="newBundle" placeholder="Product ID" class="w-full p-2 border rounded text-sm">
+                            <button @click="addBundle()" class="mt-1 w-full bg-gray-200 py-1 rounded text-xs font-bold">Add to Bundle</button>
+                            <div class="mt-1">
+                                <template x-for="b in newProduct.bundles">
+                                    <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] flex justify-between items-center mt-1">
+                                        Bundle ID: <span x-text="b"></span>
+                                        <button @click="newProduct.bundles = newProduct.bundles.filter(x => x !== b)" class="text-red-500">✕</button>
+                                    </span>
+                                </template>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-gray-600 mb-1">🔗 Related</p>
+                            <input type="text" x-model="newRelated" placeholder="Product ID" class="w-full p-2 border rounded text-sm">
+                            <button @click="addRelated()" class="mt-1 w-full bg-gray-200 py-1 rounded text-xs font-bold">Add Related</button>
+                            <div class="mt-1">
+                                <template x-for="r in newProduct.related">
+                                    <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-[10px] flex justify-between items-center mt-1">
+                                        Related ID: <span x-text="r"></span>
+                                        <button @click="newProduct.related = newProduct.related.filter(x => x !== r)" class="text-red-500">✕</button>
+                                    </span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    <button @click="addProduct()" class="w-full bg-green-600 text-white py-2 rounded font-bold text-sm mt-2">Upload Product</button>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <template x-for="prod in myProducts">
+                        <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm text-center relative">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-2 flex items-center justify-center text-gray-300 relative">
+                                <i class="fas fa-box text-2xl"></i>
+                                <span x-show="(prod.images || []).length > 0" class="absolute -bottom-2 -right-2 bg-blue-500 text-white text-[8px] w-5 h-5 rounded-full flex items-center justify-center">
+                                    <span x-text="prod.images.length"></span>
+                                </span>
+                            </div>
+                            <p class="font-bold text-sm truncate" x-text="prod.name"></p>
+                            <p class="text-green-600 text-sm" x-text="'UGX '+prod.price.toLocaleString()"></p>
+                            <span class="text-[8px] bg-gray-200 px-2 py-0.5 rounded-full uppercase" x-text="prod.type"></span>
+                            <div class="mt-1 flex flex-wrap justify-center gap-1">
+                                <template x-for="v in (prod.variants || []).slice(0,2)">
+                                    <span class="text-[8px] bg-gray-100 px-2 py-0.5 rounded-full" x-text="v"></span>
+                                </template>
+                            </div>
+                            <div x-show="prod.stock <= 5" class="absolute top-0 right-0 bg-red-500 text-white text-[8px] px-2 py-0.5 rounded-bl-lg">LOW STOCK</div>
+                            <div x-show="prod.video" class="absolute top-0 left-0 bg-purple-500 text-white text-[8px] px-2 py-0.5 rounded-br-lg">🎥</div>
+                            <div class="flex gap-1 mt-2 justify-center">
+                                <button @click="viewProduct(prod.id)" class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded">View</button>
+                                <button @click="deleteProduct(prod.id)" class="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded">Delete</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- ORDERS -->
+            <div x-show="tab === 'orders' && user.shop">
+                <div class="space-y-3">
+                    <template x-for="order in myOrders">
+                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex justify-between">
+                            <div>
+                                <p class="font-bold text-sm" x-text="'#'+order.order_id"></p>
+                                <p class="text-xs text-gray-500">Customer ID: <span x-text="order.user_id"></span></p>
+                            </div>
+                            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full" x-text="order.status"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- ================= FINANCE & PAYOUTS ================= -->
+            <div x-show="tab === 'finance' && user.shop">
+                <div class="space-y-4">
+                    <h3 class="font-bold text-lg mb-2">💰 Finance & Payouts</h3>
+                    
+                    <!-- Balance Cards -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="finance-card text-center border-green-200 bg-green-50/30">
+                            <p class="text-xs text-gray-500">Total Earnings</p>
+                            <p class="text-xl font-bold text-green-600" x-text="'UGX '+totalEarnings.toLocaleString()"></p>
+                        </div>
+                        <div class="finance-card text-center border-blue-200 bg-blue-50/30">
+                            <p class="text-xs text-gray-500">Available Balance</p>
+                            <p class="text-xl font-bold text-blue-600" x-text="'UGX '+availableBalance.toLocaleString()"></p>
+                        </div>
+                    </div>
+
+                    <!-- Payout History & Request -->
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-3 border-b border-gray-100 pb-2">
+                            <p class="font-bold text-sm">Payout History</p>
+                            <button @click="requestPayout()" class="bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-blue-700 transition">+ Request Payout</button>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <template x-for="payout in payoutHistory">
+                                <div class="flex justify-between items-center text-sm border-b border-gray-50 pb-2">
+                                    <div>
+                                        <p class="font-bold text-gray-700" x-text="'UGX '+payout.amount.toLocaleString()"></p>
+                                        <p class="text-[10px] text-gray-400" x-text="new Date(payout.date).toLocaleDateString()"></p>
+                                    </div>
+                                                            <span class="text-xs px-2 py-0.5 rounded-full" 
+                                          :class="{'bg-yellow-100 text-yellow-700': payout.status === 'pending', 'bg-green-100 text-green-700': payout.status === 'approved'}"
+                                          x-text="payout.status"></span>
+                                </div>
+                            </template>
+                            <div x-show="payoutHistory.length === 0" class="text-center text-gray-400 text-sm py-4">
+                                No payout history yet.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
+
     <script>
     function sellerApp() {
         return {
-            user: JSON.parse(localStorage.getItem('user')) || { name: 'Guest', role: 'customer' },
-            newShop: { name: '', description: '' },
-            newProduct: { name: '', price: '', category: '' },
-            myProducts: [],
+            tab: 'dashboard',
+            mobileMenuOpen: false,
+            user: JSON.parse(localStorage.getItem('user')) || { name: 'Guest' },
+            newShop: { name: '' },
+            myProducts: JSON.parse(localStorage.getItem('vendor_products') || '[]'),
+            myOrders: [],
+            
+            showAddProduct: false,
+            newProduct: { 
+                name: '', price: '', stock: 0, type: 'physical', category: '', 
+                variants: [], tags: [], images: [], specs: {}, 
+                video: '', bundles: [], related: [] 
+            },
+            newVariant: '', newTag: '', newImage: '',
+            newSpecKey: '', newSpecValue: '',
+            newBundle: '', newRelated: '',
+            
+            // Finance Data
+            payoutHistory: JSON.parse(localStorage.getItem('vendor_payouts') || '[]'),
+            
+            get lowStockItems() {
+                return this.myProducts.filter(p => p.stock <= 5);
+            },
+            
+            get totalEarnings() {
+                // Mock calculation: Sum of all order totals associated with this shop
+                return this.myOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+            },
+            
+            get availableBalance() {
+                // Mock: 90% of earnings available (after 10% commission)
+                const earned = this.totalEarnings;
+                const paidOut = this.payoutHistory
+                    .filter(p => p.status === 'approved')
+                    .reduce((sum, p) => sum + p.amount, 0);
+                return Math.max(0, earned - paidOut);
+            },
+            
             async init() {
-                if(!localStorage.getItem('token')) {
-                    alert('Please login as a seller!');
-                    window.location.href = '/login.html';
-                }
+                if(!localStorage.getItem('token')) window.location.href = '/login.html';
                 if(this.user.shop) {
-                    const res = await fetch('/api/products');
+                    const res = await fetch('/api/orders/all');
                     const data = await res.json();
-                    this.myProducts = data.filter(p => p.shop_id === this.user.shop.id);
+                    this.myOrders = data.filter(o => o.shop_id === this.user.shop.id);
                 }
             },
+            
             async registerShop() {
-                if(!this.newShop.name) return alert('Enter a shop name');
+                if(!this.newShop.name) return alert('Enter a store name');
                 const res = await fetch('/api/shops/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ owner_id: this.user.id, name: this.newShop.name, description: this.newShop.description })
+                    body: JSON.stringify({ owner_id: this.user.id, name: this.newShop.name, description: 'Store' })
                 });
                 const data = await res.json();
                 if(data.shop) {
                     this.user.shop = data.shop;
                     localStorage.setItem('user', JSON.stringify(this.user));
-                    alert('✅ Shop registered! Waiting for admin approval.');
+                    alert('✅ Store registered! Waiting for admin verification.');
                     location.reload();
-                } else {
-                    alert('❌ ' + data.error);
                 }
             },
-            async addProduct() {
-                if(!this.newProduct.name || !this.newProduct.price) return alert('Fill in all details');
-                const res = await fetch('/api/products', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ shop_id: this.user.shop.id, name: this.newProduct.name, price: parseInt(this.newProduct.price), category: this.newProduct.category || 'General', stock: 10 })
-                });
-                const data = await res.json();
-                if(data.id) {
-                    this.myProducts.push(data);
-                    this.newProduct = { name: '', price: '', category: '' };
-                    alert('✅ Product added!');
-                } else {
-                    alert('❌ ' + data.error);
+            
+            addVariant() {
+                if(!this.newVariant) return;
+                this.newProduct.variants.push(this.newVariant);
+                this.newVariant = '';
+            },
+            addTag() {
+                if(!this.newTag) return;
+                this.newProduct.tags.push(this.newTag);
+                this.newTag = '';
+            },
+            addImage() {
+                if(!this.newImage) return;
+                this.newProduct.images.push(this.newImage);
+                this.newImage = '';
+            },
+            addSpec() {
+                if(!this.newSpecKey || !this.newSpecValue) return;
+                this.newProduct.specs[this.newSpecKey] = this.newSpecValue;
+                this.newSpecKey = '';
+                this.newSpecValue = '';
+            },
+            deleteSpec(key) {
+                delete this.newProduct.specs[key];
+            },
+            addBundle() {
+                if(!this.newBundle) return;
+                this.newProduct.bundles.push(this.newBundle);
+                this.newBundle = '';
+            },
+            addRelated() {
+                if(!this.newRelated) return;
+                this.newProduct.related.push(this.newRelated);
+                this.newRelated = '';
+            },
+            
+            addProduct() {
+                if(!this.newProduct.name || !this.newProduct.price) return alert('Fill in name and price');
+                const newItem = {
+                    id: Date.now(),
+                    shop_id: this.user.shop.id,
+                    ...this.newProduct,
+                    price: parseInt(this.newProduct.price),
+                    stock: parseInt(this.newProduct.stock) || 0
+                };
+                this.myProducts.push(newItem);
+                localStorage.setItem('vendor_products', JSON.stringify(this.myProducts));
+                this.newProduct = { name: '', price: '', stock: 0, type: 'physical', category: '', variants: [], tags: [], images: [], specs: {}, video: '', bundles: [], related: [] };
+                this.showAddProduct = false;
+                alert('✅ Product added!');
+            },
+            
+            viewProduct(id) {
+                const prod = this.myProducts.find(p => p.id === id);
+                if(!prod) return;
+                let msg = `📦 ${prod.name}\nPrice: UGX ${prod.price.toLocaleString()}\nStock: ${prod.stock}\nType: ${prod.type}\n`;
+                if(prod.variants && prod.variants.length) msg += `Variants: ${prod.variants.join(', ')}\n`;
+                if(prod.tags && prod.tags.length) msg += `Tags: ${prod.tags.join(', ')}\n`;
+                if(prod.images && prod.images.length) msg += `Images: ${prod.images.length} uploaded\n`;
+                if(prod.video) msg += `Video: ${prod.video}\n`;
+                if(Object.keys(prod.specs || {}).length) {
+                    msg += `Specs:\n`;
+                    for(let [k,v] of Object.entries(prod.specs)) msg += `  ${k}: ${v}\n`;
                 }
+                if(prod.bundles && prod.bundles.length) msg += `Bundles: ${prod.bundles.join(', ')}\n`;
+                if(prod.related && prod.related.length) msg += `Related: ${prod.related.join(', ')}\n`;
+                alert(msg);
+            },
+            
+            deleteProduct(id) {
+                if(!confirm('Delete this product?')) return;
+                this.myProducts = this.myProducts.filter(p => p.id !== id);
+                localStorage.setItem('vendor_products', JSON.stringify(this.myProducts));
+            },
+            
+            // === FINANCE FUNCTIONS ===
+            requestPayout() {
+                const amount = this.availableBalance;
+                if(amount < 1000) {
+                    alert('❌ Minimum payout is UGX 1,000. You currently have UGX ' + amount.toLocaleString());
+                    return;
+                }
+                if(!confirm(`Request payout of UGX ${amount.toLocaleString()}?`)) return;
+                
+                const newPayout = {
+                    id: Date.now(),
+                    amount: amount,
+                    date: new Date().toISOString(),
+                    status: 'pending'
+                };
+                this.payoutHistory.push(newPayout);
+                localStorage.setItem('vendor_payouts', JSON.stringify(this.payoutHistory));
+                alert('✅ Payout request of UGX ' + amount.toLocaleString() + ' sent to Admin!');
+            },
+            
+            logout() {
+                localStorage.clear();
+                window.location.href = '/login.html';
             }
         }
-    }
-    function logout() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login.html';
     }
     </script>
 </body>
 </html>
+           

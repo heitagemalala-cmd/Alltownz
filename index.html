@@ -3,152 +3,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AllTownz | Uganda's Online Mall</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>AllTownz Online Mall - Uganda's #1 E-Commerce</title>
+    
+    <!-- Font & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="css/styles.css">
+    
     <style>
-        body { font-family: 'Inter', sans-serif; background: #f8f9fa; }
+        body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
-        .skeleton { background: #e0e0e0; background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200px 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        .product-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.2s; }
+        .product-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        
+        /* Custom Scrollbar for desktop */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #00A859; border-radius: 10px; }
+        
+        /* Hide broken image icon */
+        img { object-fit: contain; }
     </style>
 </head>
-<body class="pb-24">
-    <div x-data="homeApp()" x-init="init()" class="max-w-lg mx-auto bg-white min-h-screen shadow-2xl relative">
+<body class="pb-24 bg-gray-50">
+
+    <!-- MAIN APP CONTAINER -->
+    <div x-data="homeApp()" x-init="init()" class="max-w-lg mx-auto bg-white min-h-screen shadow-2xl relative pb-24">
         
-        <div class="sticky top-0 z-20 bg-white px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+        <!-- ========================================================== -->
+        <!-- TOP HEADER (Logo, Wishlist, Cart, Notifications, Account)   -->
+        <!-- ========================================================== -->
+        <div class="sticky top-0 z-30 bg-white px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+            <!-- Logo -->
             <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">A</div>
-                <h1 class="text-xl font-extrabold text-gray-900 tracking-tight">All<span class="text-green-600">Townz</span></h1>
+                <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                    <i class="fas fa-store text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-extrabold text-gray-900 leading-tight">AllTownz</h1>
+                    <p class="text-[8px] text-gray-500 font-medium tracking-wider uppercase">Online Mall</p>
+                </div>
             </div>
-            <div class="flex gap-4">
-                <button onclick="location.href='checkout.html'" class="relative p-2 hover:bg-gray-100 rounded-full transition">
-                    <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    <span x-text="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white"></span>
-                </button>
-                <button onclick="location.href='login.html'" class="bg-green-600 text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm hover:bg-green-700 transition">Login</button>
+            
+            <!-- Icons -->
+            <div class="flex gap-3 text-gray-600">
+                <div @click="location.href='account.html'" class="relative cursor-pointer hover:text-green-600 transition">
+                    <i class="far fa-heart text-lg"></i>
+                    <span class="absolute -top-1 -right-2 bg-red-500 text-white text-[8px] w-3 h-3 rounded-full flex items-center justify-center">0</span>
+                </div>
+                <div class="relative cursor-pointer hover:text-green-600 transition" @click="location.href='checkout.html'">
+                    <i class="fas fa-shopping-cart text-lg"></i>
+                    <span x-text="cartCount" class="absolute -top-1 -right-2 bg-red-500 text-white text-[8px] w-3 h-3 rounded-full flex items-center justify-center"></span>
+                </div>
+                <div class="relative cursor-pointer hover:text-green-600 transition">
+                    <i class="far fa-bell text-lg"></i>
+                </div>
+                <div class="relative cursor-pointer hover:text-green-600 transition" @click="location.href='login.html'">
+                    <i class="far fa-user text-lg"></i>
+                </div>
             </div>
         </div>
 
-        <div class="px-4 pt-4">
+        <!-- ========================================================== -->
+        <!-- MAIN SCROLLABLE CONTENT                                     -->
+        <!-- ========================================================== -->
+        <div class="px-4 pt-4 pb-6">
+            
+            <!-- SEARCH BAR (with Autocomplete) -->
             <div class="relative mb-4">
-                <svg class="w-5 h-5 text-gray-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input type="text" x-model="search" @input.debounce.300ms="searchProducts()" 
-                       placeholder="Search for products, brands..." 
-                       class="w-full pl-10 pr-4 py-3 bg-gray-100 rounded-2xl border-none focus:ring-2 focus:ring-green-500 outline-none text-sm placeholder-gray-500">
+                <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-sm"></i>
+                <input type="text" x-model="search" @input.debounce.300ms="searchAutocomplete(search)" 
+                       placeholder="Search for products, brands and more..." 
+                       class="w-full pl-9 pr-4 py-2.5 bg-gray-100 rounded-full border-none focus:ring-2 focus:ring-green-500 outline-none text-sm placeholder-gray-400">
+                
+                <!-- Autocomplete Dropdown -->
+                <div x-show="search.length > 1" class="absolute top-full left-0 right-0 bg-white mt-1 rounded-xl shadow-lg border border-gray-100 z-10 p-2 max-h-60 overflow-y-auto">
+                    <template x-for="result in searchResults">
+                        <div @click="addToCart(result)" class="p-2 hover:bg-gray-50 rounded cursor-pointer flex justify-between items-center border-b border-gray-50 last:border-0">
+                            <span class="text-sm font-medium" x-text="result.name"></span>
+                            <span class="text-xs text-green-600" x-text="'UGX '+result.price.toLocaleString()"></span>
+                        </div>
+                    </template>
+                    <div x-show="searchResults.length === 0" class="text-center text-gray-400 text-sm py-2">No products found.</div>
+                </div>
             </div>
 
-            <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2 mb-4">
-                <template x-for="cat in categories">
-                    <button @click="filterByCategory(cat)" 
-                            :class="selectedCategory === cat ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-600'"
-                            class="px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200">
-                        <span x-text="cat"></span>
-                    </button>
-                </template>
+            <!-- ========================================================== -->
+            <!-- HERO BANNER (Blue Mega Deals)                              -->
+            <!-- ========================================================== -->
+            <div class="bg-gradient-to-r from-blue-700 to-blue-500 rounded-2xl p-5 mb-6 text-white relative overflow-hidden shadow-md">
+                <div class="relative z-10 w-2/3">
+                    <span class="bg-yellow-400 text-blue-900 text-[9px] font-extrabold px-2 py-0.5 rounded-full inline-block mb-1">MEGA DEALS</span>
+                    <h2 class="text-2xl font-extrabold leading-tight">BIG SAVINGS,<br>BIGGER SMILES!</h2>
+                    <p class="text-[10px] text-blue-100 mt-1 mb-3">Shop the best products at unbeatable prices only on AllTownz Online Mall.</p>
+                    <button class="bg-white text-blue-700 px-4 py-1.5 rounded-full text-xs font-bold shadow hover:shadow-lg transition">Shop Now <i class="fas fa-chevron-right text-[10px] ml-1"></i></button>
+                </div>
+                <!-- Decorative Background Elements -->
+                <div class="absolute right-0 bottom-0 opacity-20">
+                    <i class="fas fa-shopping-bag text-8xl text-white"></i>
+                </div>
+                <div class="absolute -right-8 -top-8 w-32 h-32 bg-yellow-400 rounded-full opacity-20 blur-2xl"></div>
             </div>
 
-            <div class="bg-gray-900 rounded-2xl p-4 mb-6 shadow-lg relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-500 opacity-5 rounded-full -mr-16 -mt-16"></div>
-                <div class="flex justify-between items-center mb-3 relative z-10">
-                    <div class="flex items-center gap-2">
-                        <span class="text-2xl">🔥</span>
-                        <h2 class="text-white font-bold text-lg">Flash Sale</h2>
+            <!-- ========================================================== -->
+            <!-- 4 CIRCULAR ICONS (Flash Sales, New Arrivals, etc.)          -->
+            <!-- ========================================================== -->
+            <div class="grid grid-cols-4 gap-2 mb-6 text-center">
+                <div class="flex flex-col items-center gap-1 cursor-pointer hover:opacity-80">
+                    <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center text-red-500 border border-red-100 shadow-sm">
+                        <span class="text-[10px] font-bold bg-red-500 text-white px-1 rounded-full absolute -mt-8">HOT</span>
+                        <i class="fas fa-bolt text-xl"></i>
                     </div>
-                    <div class="bg-black/50 px-3 py-1 rounded-full border border-yellow-500/30">
-                        <span x-text="timer" class="text-yellow-400 font-mono text-sm font-bold"></span>
+                    <span class="text-[10px] font-medium text-gray-600">Flash Sales</span>
+                </div>
+                <div class="flex flex-col items-center gap-1 cursor-pointer hover:opacity-80">
+                    <div class="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center text-green-500 border border-green-100 shadow-sm">
+                        <span class="text-[10px] font-bold bg-green-500 text-white px-1 rounded-full absolute -mt-8">NEW</span>
+                        <i class="fas fa-seedling text-xl"></i>
+                    </div>
+                    <span class="text-[10px] font-medium text-gray-600">New Arrivals</span>
+                </div>
+                <div class="flex flex-col items-center gap-1 cursor-pointer hover:opacity-80">
+                    <div class="w-14 h-14 bg-purple-50 rounded-full flex items-center justify-center text-purple-500 border border-purple-100 shadow-sm">
+                        <i class="fas fa-crown text-xl"></i>
+                    </div>
+                    <span class="text-[10px] font-medium text-gray-600">Top Brands</span>
+                </div>
+                <div class="flex flex-col items-center gap-1 cursor-pointer hover:opacity-80">
+                    <div class="w-14 h-14 bg-yellow-50 rounded-full flex items-center justify-center text-yellow-500 border border-yellow-100 shadow-sm">
+                        <i class="fas fa-trophy text-xl"></i>
+                    </div>
+                    <span class="text-[10px] font-medium text-gray-600">Best Sellers</span>
+                </div>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- 5 FEATURE BADGES (Fast Delivery, Secure Payments, etc.)     -->
+            <!-- ========================================================== -->
+            <div class="grid grid-cols-5 gap-1 mb-6 bg-gray-50 p-2 rounded-xl border border-gray-100">
+                <div class="text-center">
+                    <i class="fas fa-truck text-green-600 text-lg mb-1"></i>
+                    <p class="text-[8px] font-bold text-gray-700 leading-tight">Fast Delivery</p>
+                    <p class="text-[6px] text-gray-400">Across Uganda</p>
+                </div>
+                <div class="text-center border-l border-gray-200">
+                    <i class="fas fa-shield-alt text-green-600 text-lg mb-1"></i>
+                    <p class="text-[8px] font-bold text-gray-700 leading-tight">Secure Payments</p>
+                    <p class="text-[6px] text-gray-400">100% Secure</p>
+                </div>
+                <div class="text-center border-l border-gray-200">
+                    <i class="fas fa-undo text-green-600 text-lg mb-1"></i>
+                    <p class="text-[8px] font-bold text-gray-700 leading-tight">Easy Returns</p>
+                    <p class="text-[6px] text-gray-400">7 Days Return</p>
+                </div>
+                <div class="text-center border-l border-gray-200">
+                    <i class="fas fa-headset text-green-600 text-lg mb-1"></i>
+                    <p class="text-[8px] font-bold text-gray-700 leading-tight">24/7 Support</p>
+                    <p class="text-[6px] text-gray-400">We're here to help</p>
+                </div>
+                <div class="text-center border-l border-gray-200">
+                    <i class="fas fa-check-circle text-green-600 text-lg mb-1"></i>
+                    <p class="text-[8px] font-bold text-gray-700 leading-tight">Buyer Protection</p>
+                    <p class="text-[6px] text-gray-400">Shop with confidence</p>
+                </div>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- FLASH SALE SECTION                                          -->
+            <!-- ========================================================== -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-bolt text-red-500 text-lg"></i>
+                        <h2 class="font-bold text-gray-900 text-sm">FLASH SALE</h2>
+                        <span class="text-[10px] text-gray-400 font-medium">Limited time offer</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-[10px] font-bold text-gray-600">
+                        <span class="bg-gray-800 text-white px-2 py-1 rounded text-[10px]" x-text="timer"></span>
+                        <span class="text-green-600 text-[10px] cursor-pointer">View All <i class="fas fa-chevron-right text-[8px]"></i></span>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3 relative z-10">
+                
+                <div class="grid grid-cols-2 gap-3">
                     <template x-if="flashSales.length > 0">
                         <template x-for="item in flashSales">
-                            <div @click="addToCart(item)" class="bg-white rounded-xl p-3 cursor-pointer hover:shadow-xl transition transform hover:-translate-y-1">
-                                <div class="relative w-full h-28 mb-2">
-                                    <img :src="item.image" class="w-full h-full object-contain rounded-lg" alt="product">
-                                    <span class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">-40%</span>
+                            <div @click="addToCart(item)" class="bg-white border border-gray-100 rounded-xl p-3 cursor-pointer hover:shadow-md transition">
+                                <div class="w-full h-28 bg-gray-50 rounded mb-2 flex items-center justify-center">
+                                    <img :src="item.image || 'https://placehold.co/200x200/f3f4f6/a3a3a3?text=Product'" class="w-full h-full object-contain rounded">
                                 </div>
-                                <p class="text-xs text-gray-500 font-medium truncate" x-text="item.name"></p>
-                                <p class="text-green-600 font-extrabold text-sm mt-1" x-text="'UGX '+item.price.toLocaleString()"></p>
+                                <p class="text-[10px] font-bold text-gray-800 truncate" x-text="item.name"></p>
+                                <p class="text-green-600 font-bold text-sm" x-text="'UGX '+item.price.toLocaleString()"></p>
+                                <button class="w-full mt-2 bg-green-600 text-white text-[10px] font-bold py-1.5 rounded hover:bg-green-700 transition">Add to Cart</button>
                             </div>
                         </template>
                     </template>
-                    <template x-if="flashSales.length === 0">
-                        <div class="col-span-2 text-center py-4 text-gray-400 text-sm">Loading deals...</div>
+                </div>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- 3 PROMO BANNERS (Free Delivery, MTN/Airtel, Refer & Earn)   -->
+            <!-- ========================================================== -->
+            <div class="grid grid-cols-1 gap-3 mb-6">
+                <!-- Free Delivery -->
+                <div class="bg-gradient-to-r from-green-400 to-green-500 rounded-xl p-4 flex justify-between items-center text-white shadow">
+                    <div>
+                        <h3 class="font-bold text-sm">FREE DELIVERY</h3>
+                        <p class="text-[10px] text-green-100">On orders over UGX 100,000</p>
+                        <button class="mt-2 bg-white text-green-600 px-3 py-1 rounded-full text-[10px] font-bold">Shop Now →</button>
+                    </div>
+                    <i class="fas fa-motorcycle text-4xl text-white opacity-50"></i>
+                </div>
+                
+                <!-- MTN/Airtel -->
+                <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-4 flex justify-between items-center text-white shadow">
+                    <div>
+                        <h3 class="font-bold text-sm">PAY WITH</h3>
+                        <div class="flex gap-2 mt-1">
+                            <span class="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold">MTN</span>
+                            <span class="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold">Airtel</span>
+                        </div>
+                        <p class="text-[10px] text-purple-100 mt-1">Mobile Money</p>
+                    </div>
+                    <i class="fas fa-mobile-alt text-4xl text-white opacity-50"></i>
+                </div>
+
+                <!-- Refer & Earn -->
+                <div class="bg-gradient-to-r from-orange-400 to-red-400 rounded-xl p-4 flex justify-between items-center text-white shadow">
+                    <div>
+                        <h3 class="font-bold text-sm">REFER & EARN</h3>
+                        <p class="text-[10px] text-orange-100">Invite friends and earn rewards</p>
+                        <button class="mt-2 bg-white text-orange-500 px-3 py-1 rounded-full text-[10px] font-bold">Start Earning →</button>
+                    </div>
+                    <i class="fas fa-gift text-4xl text-white opacity-50"></i>
+                </div>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- TOP CATEGORIES                                              -->
+            <!-- ========================================================== -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="font-bold text-gray-900 text-sm">TOP CATEGORIES</h2>
+                    <span class="text-green-600 text-[10px] font-bold cursor-pointer">View All</span>
+                </div>
+                <div class="grid grid-cols-4 gap-2">
+                    <div class="text-center cursor-pointer">
+                        <div class="w-full aspect-square bg-gray-100 rounded-xl flex items-center justify-center mb-1">
+                            <i class="fas fa-mobile-alt text-2xl text-gray-500"></i>
+                        </div>
+                        <p class="text-[10px] font-medium text-gray-600">Phones</p>
+                    </div>
+                    <div class="text-center cursor-pointer">
+                        <div class="w-full aspect-square bg-gray-100 rounded-xl flex items-center justify-center mb-1">
+                            <i class="fas fa-tshirt text-2xl text-gray-500"></i>
+                        </div>
+                        <p class="text-[10px] font-medium text-gray-600">Fashion</p>
+                    </div>
+                    <div class="text-center cursor-pointer">
+                        <div class="w-full aspect-square bg-gray-100 rounded-xl flex items-center justify-center mb-1">
+                            <i class="fas fa-laptop text-2xl text-gray-500"></i>
+                        </div>
+                        <p class="text-[10px] font-medium text-gray-600">Electronics</p>
+                    </div>
+                    <div class="text-center cursor-pointer">
+                        <div class="w-full aspect-square bg-gray-100 rounded-xl flex items-center justify-center mb-1">
+                            <i class="fas fa-couch text-2xl text-gray-500"></i>
+                        </div>
+                        <p class="text-[10px] font-medium text-gray-600">Home</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- RECOMMENDED FOR YOU                                         -->
+            <!-- ========================================================== -->
+            <div>
+                <div class="flex justify-between items-end mb-3">
+                    <h3 class="font-bold text-lg text-gray-900">Recommended For You</h3>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <template x-if="loading">
+                        <template x-for="i in 4">
+                            <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 animate-pulse">
+                                <div class="bg-gray-200 w-full h-28 rounded mb-2"></div>
+                                <div class="bg-gray-200 w-3/4 h-4 rounded mb-1"></div>
+                                <div class="bg-gray-200 w-1/2 h-4 rounded"></div>
+                            </div>
+                        </template>
+                    </template>
+
+                    <template x-if="!loading">
+                        <template x-for="prod in products">
+                            <div @click="addToCart(prod)" class="bg-white border border-gray-100 rounded-xl p-3 cursor-pointer hover:shadow-md transition relative">
+                                <button @click="toggleWishlist(prod)" class="absolute top-2 right-2 text-gray-300 hover:text-red-500 transition">
+                                  </button>
+                                <div class="w-full h-28 bg-gray-50 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+                                    <img :src="prod.image || 'https://placehold.co/200x200/f3f4f6/a3a3a3?text=Product'" class="w-full h-full object-contain rounded">
+                                </div>
+                                <p class="text-sm font-semibold text-gray-800 line-clamp-1" x-text="prod.name"></p>
+                                <div class="flex justify-between items-center mt-1">
+                                    <p class="text-green-600 font-bold text-sm" x-text="'UGX '+prod.price.toLocaleString()"></p>
+                                    <i class="fas fa-star text-yellow-400 text-xs"></i>
+                                </div>
+                            </div>
+                        </template>
                     </template>
                 </div>
             </div>
 
-            <div class="flex justify-between items-end mb-3">
-                <h3 class="font-bold text-lg text-gray-900">Recommended For You</h3>
-                <button class="text-green-600 text-sm font-semibold hover:underline">See All</button>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <template x-if="loading">
-                    <template x-for="i in 4">
-                        <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-                            <div class="skeleton w-full h-32 mb-2"></div>
-                            <div class="skeleton w-3/4 h-4 mb-1"></div>
-                            <div class="skeleton w-1/2 h-4"></div>
-                        </div>
-                    </template>
-                </template>
-
-                <template x-if="!loading">
-                    <template x-for="prod in products">
-                        <div @click="addToCart(prod)" class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 hover:shadow-md transition cursor-pointer group">
-                            <div class="w-full h-32 bg-gray-50 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
-                                <img :src="prod.image || 'https://placehold.co/200x200/e2e8f0/1e293b?text=Product'" 
-                                     class="w-full h-full object-contain group-hover:scale-105 transition duration-300" alt="product">
-                            </div>
-                            <p class="text-sm font-medium text-gray-800 line-clamp-1" x-text="prod.name"></p>
-                            <div class="flex justify-between items-center mt-1">
-                                <p class="text-green-600 font-bold text-sm" x-text="'UGX '+prod.price.toLocaleString()"></p>
-                                <div class="flex items-center gap-1">
-                                    <span class="text-yellow-500 text-xs">★</span>
-                                    <span class="text-[10px] text-gray-400">4.5</span>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-                </template>
-            </div>
         </div>
 
-        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 px-6 flex justify-between items-center z-50 max-w-lg mx-auto shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-            <button onclick="location.href='/'" class="flex flex-col items-center gap-0.5 text-green-600">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
-                <span class="text-[10px] font-bold">Home</span>
+        <!-- ========================================================== -->
+        <!-- BOTTOM NAVIGATION BAR                                       -->
+        <!-- ========================================================== -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 px-4 flex justify-between items-center z-50 max-w-lg mx-auto shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+            <button @click="location.href='/'" class="flex flex-col items-center gap-0.5 text-green-600">
+                <i class="fas fa-home text-lg"></i>
+                <span class="text-[8px] font-bold">Home</span>
             </button>
-            <button onclick="location.href='seller-dashboard.html'" class="flex flex-col items-center gap-0.5 text-gray-500 hover:text-gray-800">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                <span class="text-[10px] font-medium">Sell</span>
+            <button class="flex flex-col items-center gap-0.5 text-gray-500 hover:text-green-600">
+                <i class="fas fa-th-large text-lg"></i>
+                <span class="text-[8px] font-medium">Categories</span>
             </button>
-            <button onclick="location.href='tracking.html'" class="flex flex-col items-center gap-0.5 text-gray-500 hover:text-gray-800">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span class="text-[10px] font-medium">Track</span>
+            <button class="flex flex-col items-center gap-0.5 text-gray-500 hover:text-green-600">
+                <i class="fas fa-bolt text-lg"></i>
+                <span class="text-[8px] font-medium">Deals</span>
             </button>
-            <button onclick="location.href='admin.html'" class="flex flex-col items-center gap-0.5 text-gray-500 hover:text-gray-800">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                <span class="text-[10px] font-medium">Admin</span>
+            <button @click="location.href='checkout.html'" class="flex flex-col items-center gap-0.5 text-gray-500 hover:text-green-600">
+                <i class="fas fa-shopping-cart text-lg"></i>
+                <span class="text-[8px] font-medium">Cart</span>
+            </button>
+            <button @click="location.href='login.html'" class="flex flex-col items-center gap-0.5 text-gray-500 hover:text-green-600">
+                <i class="far fa-user text-lg"></i>
+                <span class="text-[8px] font-medium">Account</span>
             </button>
         </div>
+
     </div>
 
+    <!-- ========================================================== -->
+    <!-- JAVASCRIPT (Alpine.js)                                      -->
+    <!-- ========================================================== -->
     <script>
     function homeApp() {
         return {
             search: '',
             cartCount: 0,
             loading: true,
-            timer: '02:30:00',
-            selectedCategory: 'Electronics',
-            categories: ['Electronics', 'Fashion', 'Groceries', 'Phones', 'Home'],
+            timer: '02:14:33',
             products: [],
             flashSales: [],
+            searchResults: [],
+            
+            // Wishlist Feature
+            wishlist: JSON.parse(localStorage.getItem('wishlist') || '[]'),
             
             async init() {
                 const cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -157,24 +368,30 @@
                 this.flashSales = this.products.slice(0, 2);
                 this.loading = false;
                 
+                // Countdown Timer
                 setInterval(() => {
-                    let [h, m, s] = this.timer.split(':').map(Number);
-                    s--; if(s < 0) { s = 59; m--; } if(m < 0) { m = 59; h--; } if(h < 0) { h = 2; m = 30; s = 0; }
+                    let parts = this.timer.split(':').map(Number);
+                    let totalSec = parts[0]*3600 + parts[1]*60 + parts[2];
+                    if(totalSec <= 0) return;
+                    totalSec--;
+                    let h = Math.floor(totalSec/3600);
+                    let m = Math.floor((totalSec%3600)/60);
+                    let s = totalSec%60;
                     this.timer = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
                 }, 1000);
             },
             
             async loadProducts() {
                 try {
-                    const response = await fetch('/api/products');
-                    const data = await response.json();
-                    this.products = data.length > 0 ? data : this.getFallbackProducts();
+                    const res = await fetch('/api/products');
+                    const data = await res.json();
+                    this.products = data.length > 0 ? data : this.getFallback();
                 } catch {
-                    this.products = this.getFallbackProducts();
+                    this.products = this.getFallback();
                 }
             },
             
-            getFallbackProducts() {
+            getFallback() {
                 return [
                     {id: 1, name: 'Samsung Galaxy A54', price: 850000, image: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=200&h=200&fit=crop'},
                     {id: 2, name: 'Nike Air Max', price: 350000, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop'},
@@ -183,37 +400,37 @@
                 ];
             },
             
-            async searchProducts() {
-                if(this.search.length > 2) {
-                    this.loading = true;
-                    try {
-                        const response = await fetch(`/api/products/search?q=${this.search}`);
-                        const data = await response.json();
-                        this.products = data.length > 0 ? data : this.getFallbackProducts();
-                    } catch {}
-                    this.loading = false;
-                } else if(this.search.length === 0) {
-                    this.loadProducts();
+            // Search Autocomplete Feature
+            async searchAutocomplete(query) {
+                if(query.length < 2) {
+                    this.searchResults = [];
+                    return;
                 }
+                this.searchResults = this.products.filter(p => 
+                    p.name.toLowerCase().includes(query.toLowerCase())
+                );
             },
             
-            async filterByCategory(category) {
-                this.selectedCategory = category;
-                this.loading = true;
-                try {
-                    const response = await fetch(`/api/products/search?q=${category}`);
-                    const data = await response.json();
-                    this.products = data.length > 0 ? data : this.getFallbackProducts();
-                } catch {}
-                this.loading = false;
-            },
-            
+            // Add to Cart Feature
             addToCart(item) {
                 let cart = JSON.parse(localStorage.getItem('cart') || '[]');
                 cart.push(item);
                 localStorage.setItem('cart', JSON.stringify(cart));
                 this.cartCount = cart.length;
                 alert(`🛒 ${item.name} added to cart!`);
+            },
+            
+            // Wishlist Feature
+            toggleWishlist(item) {
+                const index = this.wishlist.findIndex(i => i.id === item.id);
+                if(index > -1) {
+                    this.wishlist.splice(index, 1);
+                    alert('Removed from wishlist.');
+                } else {
+                    this.wishlist.push(item);
+                    alert('Added to wishlist! ❤️');
+                }
+                localStorage.setItem('wishlist', JSON.stringify(this.wishlist));
             }
         }
     }

@@ -1,53 +1,13 @@
-// backend/server.js - ZERO DEPENDENCIES + PERMANENT JSON STORAGE
+// backend/server.js - COMPLETE ALLTOWNZ SUPABASE VERSION
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 
-// Path to JSON database file
-const DATA_FILE = path.join(__dirname, 'data.json');
-
-// Load data from file (or create default if missing)
-function loadData() {
-    try {
-        if (fs.existsSync(DATA_FILE)) {
-            const raw = fs.readFileSync(DATA_FILE, 'utf8');
-            return JSON.parse(raw);
-        }
-    } catch (err) {
-        console.log('📄 Creating new data file...');
-    }
-    
-    // Default data if file doesn't exist
-    const defaultData = {
-        users: [
-            {id: 1, email: 'admin@alltownz.com', password: 'admin123', name: 'System Admin', role: 'admin', verified: true},
-            {id: 2, email: 'seller@gmail.com', password: 'seller123', name: 'John Doe', role: 'seller', verified: true},
-            {id: 3, email: 'buyer@gmail.com', password: 'buyer123', name: 'Jane Customer', role: 'customer', verified: true}
-        ],
-        shops: [
-            {id: 1, owner_id: 2, name: "Kampala Electronics Hub", description: "Best gadgets in town", approved: true}
-        ],
-        products: [
-            {id: 1, shop_id: 1, name: 'Samsung Galaxy A54', price: 850000, stock: 15, category: 'Electronics', image: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=200&h=200&fit=crop'},
-            {id: 2, shop_id: 1, name: 'Nike Air Max', price: 350000, stock: 7, category: 'Fashion', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop'},
-            {id: 3, shop_id: 1, name: 'Wireless Earbuds', price: 120000, stock: 30, category: 'Electronics', image: 'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=200&h=200&fit=crop'},
-            {id: 4, shop_id: 1, name: 'Smart Watch Pro', price: 250000, stock: 12, category: 'Electronics', image: 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=200&h=200&fit=crop'}
-        ],
-        orders: []
-    };
-    
-    // Save default data to file
-    fs.writeFileSync(DATA_FILE, JSON.stringify(defaultData, null, 2));
-    return defaultData;
-}
-
-// Save data to file
-function saveData(data) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-}
-
-// Load the database
-let DB = loadData();
+// --- YOUR SUPABASE DETAILS ---
+const supabaseUrl = 'https://jzsqfkshdmsdpwjmukav.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6c3Fma3NoZG1zZHB3am11a2F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxNTg2MzEsImV4cCI6MjA5ODczNDYzMX0.5s5CCzry7ZBkp_Nrhk8q0bb9ALJwchqZ5bxTjLCK95U';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Helper functions
 function parseBody(req, callback) {
@@ -77,8 +37,7 @@ function serveStatic(res, filePath, mimeType) {
 }
 
 // Create HTTP server
-const server = http.createServer((req, res) => {
-    // Handle CORS preflight
+const server = http.createServer(async (req, res) => {
     if (req.method === 'OPTIONS') {
         res.writeHead(200, { 
             'Access-Control-Allow-Origin': '*', 
@@ -91,133 +50,225 @@ const server = http.createServer((req, res) => {
 
     const url = req.url.split('?')[0];
 
-    // --- AUTH LOGIN ---
+    // ============================================================
+    // 1. AUTH ROUTES
+    // ============================================================
     if (req.method === 'POST' && url === '/api/auth/login') {
-        return parseBody(req, (data) => {
-            const user = DB.users.find(u => u.email === data.email && u.password === data.password);
-            if (user) {
-                const shop = DB.shops.find(s => s.owner_id === user.id);
-                sendJSON(res, { 
-                    token: 'demo-token-' + Date.now(), 
-                    user: { ...user, password: undefined, shop: shop || null } 
-                });
-            } else {
-                sendJSON(res, { error: 'Invalid credentials' }, 401);
-            }
+        return parseBody(req, async (data) => {
+            const { data: user, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('email', data.email)
+                .eq('password', data.password)
+                .single();
+            
+            if (error || !user) return sendJSON(res, { error: 'Invalid credentials' }, 401);
+            if (!user.verified) return sendJSON(res, { error: 'Account disabled by Admin' }, 403);
+            
+            const { data: shop } = await supabase
+                .from('shops')
+                .select('*')
+                .eq('owner_id', user.id)
+                .maybeSingle();
+
+            sendJSON(res, { 
+                token: 'demo-token-' + Date.now(), 
+                user: { ...user, password: undefined, shop: shop || null } 
+            });
         });
     }
 
-    // --- SELLER: REGISTER SHOP ---
+    // ============================================================
+    // 2. SELLER ROUTES
+    // ============================================================
     if (req.method === 'POST' && url === '/api/shops/register') {
-        return parseBody(req, (data) => {
-            const existing = DB.shops.find(s => s.owner_id === data.owner_id);
-            if (existing) return sendJSON(res, { error: 'You already have a shop' }, 400);
-            const newShop = { 
-                id: DB.shops.length + 1, 
-                owner_id: data.owner_id, 
-                name: data.name, 
-                description: data.description, 
-                approved: false 
-            };
-            DB.shops.push(newShop);
-            saveData(DB); // Save to JSON file
-            sendJSON(res, { message: 'Shop registered! Waiting for admin approval.', shop: newShop });
+        return parseBody(req, async (data) => {
+            const { data: existing } = await supabase
+                .from('shops')
+                .select('*')
+                .eq('owner_id', data.owner_id);
+            
+            if (existing && existing.length > 0) {
+                return sendJSON(res, { error: 'You already have a shop' }, 400);
+            }
+
+            const { data: newShop, error } = await supabase
+                .from('shops')
+                .insert({
+                    owner_id: data.owner_id,
+                    name: data.name,
+                    description: data.description,
+                    approved: false
+                })
+                .select();
+
+            if (error) return sendJSON(res, { error: error.message }, 400);
+            
+            sendJSON(res, { message: 'Shop registered! Waiting for admin approval.', shop: newShop[0] });
         });
     }
 
-    // --- SELLER: ADD PRODUCT ---
     if (req.method === 'POST' && url === '/api/products') {
-        return parseBody(req, (data) => {
-            const shop = DB.shops.find(s => s.id === data.shop_id);
+        return parseBody(req, async (data) => {
+            // Check if shop is approved
+            const { data: shop } = await supabase
+                .from('shops')
+                .select('*')
+                .eq('id', data.shop_id)
+                .single();
+
             if (!shop || !shop.approved) return sendJSON(res, { error: 'Your shop is not approved yet' }, 403);
-            const newProduct = { 
-                id: DB.products.length + 1, 
-                ...data,
-                image: data.image || 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=200&h=200&fit=crop'
-            };
-            DB.products.push(newProduct);
-            saveData(DB); // Save to JSON file
-            sendJSON(res, newProduct);
+
+            const { data: newProduct, error } = await supabase
+                .from('products')
+                .insert({
+                    shop_id: data.shop_id,
+                    name: data.name,
+                    price: data.price,
+                    stock: data.stock || 0,
+                    category: data.category || 'General',
+                    image: data.image || ''
+                })
+                .select();
+
+            if (error) return sendJSON(res, { error: error.message }, 400);
+            sendJSON(res, newProduct[0]);
         });
     }
 
-    // --- GET PRODUCTS ---
+    // ============================================================
+    // 3. CUSTOMER ROUTES
+    // ============================================================
     if (req.method === 'GET' && url === '/api/products') {
-        const activeProducts = DB.products.filter(p => {
-            const shop = DB.shops.find(s => s.id === p.shop_id);
-            return shop && shop.approved;
-        });
-        return sendJSON(res, activeProducts);
+        const { data: products, error } = await supabase
+            .from('products')
+            .select('*');
+        
+        if (error) return sendJSON(res, { error: error.message }, 500);
+        return sendJSON(res, products || []);
     }
 
-    // --- SEARCH PRODUCTS ---
     if (req.method === 'GET' && url === '/api/products/search') {
         const q = new URL(req.url, `http://${req.headers.host}`).searchParams.get('q') || '';
-        const results = DB.products.filter(p => 
-            p.name.toLowerCase().includes(q.toLowerCase()) || 
-            p.category.toLowerCase().includes(q.toLowerCase())
-        );
-        return sendJSON(res, results);
+        const { data: products, error } = await supabase
+            .from('products')
+            .select('*')
+            .ilike('name', `%${q}%`);
+        
+        if (error) return sendJSON(res, { error: error.message }, 500);
+        return sendJSON(res, products || []);
     }
 
-    // --- ADMIN: GET ALL PENDING SHOPS ---
-    if (req.method === 'GET' && url === '/api/admin/pending-shops') {
-        return sendJSON(res, DB.shops.filter(s => !s.approved));
-    }
-
-    // --- ADMIN: APPROVE SHOP ---
-    if (req.method === 'PUT' && url.startsWith('/api/admin/approve-shop/')) {
-        const shopId = parseInt(url.split('/').pop());
-        const shop = DB.shops.find(s => s.id === shopId);
-        if (shop) { 
-            shop.approved = true; 
-            saveData(DB); // Save to JSON file
-            return sendJSON(res, { message: 'Shop approved successfully!' }); 
-        }
-        return sendJSON(res, { error: 'Shop not found' }, 404);
-    }
-
-    // --- ADMIN: TOGGLE USER (Enable/Disable) ---
-    if (req.method === 'PUT' && url.startsWith('/api/admin/toggle-user/')) {
-        const userId = parseInt(url.split('/').pop());
-        const user = DB.users.find(u => u.id === userId);
-        if (user) { 
-            user.verified = !user.verified; 
-            saveData(DB); // Save to JSON file
-            return sendJSON(res, { message: `User ${user.verified ? 'Enabled' : 'Disabled'}`, user }); 
-        }
-        return sendJSON(res, { error: 'User not found' }, 404);
-    }
-
-    // --- CREATE ORDER ---
+    // ============================================================
+    // 4. ORDERS (WITH STOCK DEDUCTION)
+    // ============================================================
     if (req.method === 'POST' && url === '/api/orders') {
-        return parseBody(req, (data) => {
-            const order = { 
-                ...data, 
-                id: Date.now(), 
-                order_id: 'ALL-' + Date.now().toString(36).toUpperCase(), 
-                created_at: new Date().toISOString(), 
-                status: 'pending' 
-            };
-            DB.orders.push(order);
-            saveData(DB); // Save to JSON file
+        return parseBody(req, async (data) => {
+            let shop_id = null;
+
+            // 1. Reduce stock for each item
+            for (const item of data.items) {
+                const { data: product } = await supabase
+                    .from('products')
+                    .select('stock, shop_id')
+                    .eq('id', item.product_id)
+                    .single();
+
+                if (product) {
+                    shop_id = product.shop_id;
+                    const newStock = Math.max(0, product.stock - (item.quantity || 1));
+                    await supabase
+                        .from('products')
+                        .update({ stock: newStock })
+                        .eq('id', item.product_id);
+                }
+            }
+
+            // 2. Create the order
+            const { data: newOrder, error } = await supabase
+                .from('orders')
+                .insert({
+                    order_id: 'ALL-' + Date.now().toString(36).toUpperCase(),
+                    user_id: data.user_id,
+                    shop_id: shop_id,
+                    total: data.total,
+                    status: 'pending'
+                })
+                .select();
+
+            if (error) return sendJSON(res, { error: error.message }, 400);
+
             sendJSON(res, { 
-                order_id: order.order_id, 
-                id: order.id, 
+                order_id: newOrder[0].order_id, 
+                id: newOrder[0].id, 
                 status: 'pending', 
                 message: 'Order placed successfully!' 
             });
         });
     }
 
-    // --- GET USER ORDERS ---
     if (req.method === 'GET' && url.startsWith('/api/orders/user/')) {
         const userId = parseInt(url.split('/').pop());
-        const userOrders = DB.orders.filter(o => o.user_id === userId);
-        return sendJSON(res, userOrders);
+        const { data: orders, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('user_id', userId);
+        
+        if (error) return sendJSON(res, { error: error.message }, 500);
+        return sendJSON(res, orders || []);
     }
 
-    // --- SERVE STATIC FILES ---
+    // ============================================================
+    // 5. ADMIN: USER MANAGEMENT
+    // ============================================================
+    if (req.method === 'GET' && url === '/api/admin/users') {
+        const { data: users, error } = await supabase
+            .from('users')
+            .select('*');
+        
+        if (error) return sendJSON(res, { error: error.message }, 500);
+        return sendJSON(res, users || []);
+    }
+
+    if (req.method === 'PUT' && url.startsWith('/api/admin/toggle-user/')) {
+        const userId = parseInt(url.split('/').pop());
+        const { data: user, error } = await supabase
+            .from('users')
+            .update({ verified: false })
+            .eq('id', userId)
+            .select();
+        
+        if (error) return sendJSON(res, { error: error.message }, 500);
+        return sendJSON(res, { message: 'User status toggled', user: user[0] });
+    }
+
+    // ============================================================
+    // 6. ADMIN: SHOP MANAGEMENT
+    // ============================================================
+    if (req.method === 'GET' && url === '/api/shops/all') {
+        const { data: shops, error } = await supabase
+            .from('shops')
+            .select('*');
+        
+        if (error) return sendJSON(res, { error: error.message }, 500);
+        return sendJSON(res, shops || []);
+    }
+
+    if (req.method === 'PUT' && url.startsWith('/api/admin/approve-shop/')) {
+        const shopId = parseInt(url.split('/').pop());
+        const { data: shop, error } = await supabase
+            .from('shops')
+            .update({ approved: true })
+            .eq('id', shopId)
+            .select();
+        
+        if (error) return sendJSON(res, { error: error.message }, 500);
+        return sendJSON(res, { message: 'Shop approved successfully!', shop: shop[0] });
+    }
+
+    // ============================================================
+    // 7. SERVE STATIC FILES
+    // ============================================================
     if (req.url === '/' || req.url === '/index.html') 
         return serveStatic(res, path.join(__dirname, '../index.html'), 'text/html');
     if (req.url.endsWith('.html')) 
@@ -233,6 +284,5 @@ const server = http.createServer((req, res) => {
 // Start server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`✅ AllTownz Marketplace running on port ${PORT}`);
-    console.log(`📁 Data saved permanently to ${DATA_FILE}`);
+    console.log(`✅ AllTownz Marketplace (Supabase) running on port ${PORT}`);
 });
